@@ -65,17 +65,19 @@ export default function AdminPage() {
         Admin dashboard
       </Typography>
       <Tabs value={tab} onChange={(_, value) => setTab(value)} sx={{ mb: 3 }}>
+        <Tab label="Overview" />
         <Tab label="Users" />
         <Tab label="Carts" />
         <Tab label="Activity" />
         <Tab label="Orders" />
         <Tab label="Products" />
       </Tabs>
-      {tab === 0 && <UsersPanel showToast={showToast} />}
-      {tab === 1 && <CartsPanel showToast={showToast} />}
-      {tab === 2 && <ActivityPanel showToast={showToast} />}
-      {tab === 3 && <OrdersPanel showToast={showToast} />}
-      {tab === 4 && <ProductsPanel showToast={showToast} />}
+      {tab === 0 && <OverviewPanel />}
+      {tab === 1 && <UsersPanel showToast={showToast} />}
+      {tab === 2 && <CartsPanel showToast={showToast} />}
+      {tab === 3 && <ActivityPanel showToast={showToast} />}
+      {tab === 4 && <OrdersPanel showToast={showToast} />}
+      {tab === 5 && <ProductsPanel showToast={showToast} />}
     </Container>
   );
 }
@@ -111,6 +113,99 @@ function PanelStatus({ loading, error, empty, emptyText }) {
   if (error) return <Typography color="error">{error}</Typography>;
   if (empty) return <Typography color="text.secondary">{emptyText}</Typography>;
   return null;
+}
+
+function StatCard({ label, value }) {
+  return (
+    <Box sx={{ border: "1px solid #e4ddd2", p: 3, bgcolor: "#fffdf9" }}>
+      <Typography variant="overline" sx={{ letterSpacing: "0.2em", color: "text.secondary" }}>
+        {label}
+      </Typography>
+      <Typography
+        sx={{
+          fontFamily: '"Cormorant Garamond", serif',
+          fontWeight: 600,
+          fontSize: 40,
+          lineHeight: 1.1,
+          mt: 0.5,
+        }}
+      >
+        {value}
+      </Typography>
+    </Box>
+  );
+}
+
+function OverviewPanel() {
+  const { data, loading, error } = useFetch("/admin/stats");
+  return (
+    <>
+      <PanelStatus loading={loading} error={error} empty={false} emptyText="" />
+      {data && (
+        <Stack spacing={4}>
+          <Box
+            sx={{
+              display: "grid",
+              gap: 2,
+              gridTemplateColumns: { xs: "1fr 1fr", md: "repeat(4, 1fr)" },
+            }}
+          >
+            <StatCard label="Revenue" value={`$${data.total_revenue.toFixed(2)}`} />
+            <StatCard label="Orders" value={data.total_orders} />
+            <StatCard label="Users" value={data.total_users} />
+            <StatCard label="Products" value={data.total_products} />
+          </Box>
+
+          <Box>
+            <Typography variant="subtitle1" sx={{ mb: 1.5 }}>
+              Orders by status
+            </Typography>
+            <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
+              {Object.keys(data.orders_by_status).length === 0 ? (
+                <Typography color="text.secondary" variant="body2">
+                  No orders yet.
+                </Typography>
+              ) : (
+                Object.entries(data.orders_by_status).map(([status, count]) => (
+                  <Chip key={status} label={`${status}: ${count}`} variant="outlined" />
+                ))
+              )}
+            </Stack>
+          </Box>
+
+          <Box>
+            <Typography variant="subtitle1" sx={{ mb: 1.5 }}>
+              Top products
+            </Typography>
+            {data.top_products.length === 0 ? (
+              <Typography color="text.secondary" variant="body2">
+                No sales yet.
+              </Typography>
+            ) : (
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Product</TableCell>
+                    <TableCell align="right">Units sold</TableCell>
+                    <TableCell align="right">Revenue</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {data.top_products.map((p) => (
+                    <TableRow key={p.name}>
+                      <TableCell>{p.name}</TableCell>
+                      <TableCell align="right">{p.quantity}</TableCell>
+                      <TableCell align="right">${p.revenue.toFixed(2)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </Box>
+        </Stack>
+      )}
+    </>
+  );
 }
 
 function UsersPanel() {
