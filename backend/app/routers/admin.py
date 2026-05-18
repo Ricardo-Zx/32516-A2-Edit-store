@@ -37,6 +37,60 @@ class ActivityOut(BaseModel):
     created_at: datetime
 
 
+class TopProduct(BaseModel):
+    name: str
+    quantity: int
+    revenue: float
+
+
+class AdminStats(BaseModel):
+    total_users: int
+    total_products: int
+    total_orders: int
+    total_revenue: float
+    orders_by_status: dict[str, int]
+    top_products: list[TopProduct]
+
+
+@router.get("/stats", response_model=AdminStats)
+async def store_stats(db: DbDep, _: CurrentAdmin) -> AdminStats:
+    total_users = await db.users.count_documents({})
+    total_products = await db.products.count_documents({})
+
+    orders_by_status: dict[str, int] = {}
+    total_orders = 0
+    total_revenue = 0.0
+    product_tally: dict[str, dict[str, float]] = {}
+
+    async for order in db.orders.find():
+        total_orders += 1
+        status_key = order.get("status", "placed")
+        orders_by_status[status_key] = orders_by_status.get(status_key, 0) + 1
+        if status_key != "cancelled":
+            total_revenue += float(order.get("total", 0))
+        for item in order.get("items", []):
+            name = item.get("name", "Unknown")
+            entry = product_tally.setdefault(name, {"quantity": 0, "revenue": 0.0})
+            entry["quantity"] += int(item.get("quantity", 0))
+            entry["revenue"] += float(item.get("subtotal", 0))
+
+    top_products = [
+        TopProduct(name=name, quantity=int(v["quantity"]), revenue=round(v["revenue"], 2))
+        for name, v in sorted(
+            product_tally.items(), key=lambda kv: kv[1]["quantity"], reverse=True
+        )[:5]
+    ]
+
+    return AdminStats(
+        total_users=total_users,
+        total_products=total_products,
+        total_orders=total_orders,
+        total_revenue=round(total_revenue, 2),
+        orders_by_status=orders_by_status,
+        top_products=top_products,
+    )
+
+
 @router.get("/users", response_model=list[AdminUserOut])
 async def list_users(db: DbDep, _: CurrentAdmin) -> list[AdminUserOut]:
     return [
