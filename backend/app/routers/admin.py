@@ -15,6 +15,7 @@ from fastapi import HTTPException
 
 from ..deps import CurrentAdmin, DbDep, to_object_id
 from ..schemas import AdminCartView, AdminOrderView, OrderItemOut, OrderStatusUpdate
+from .auth import log_activity
 from .cart import _build_cart_response
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
@@ -156,19 +157,30 @@ async def update_order_status(
     order_id: str,
     payload: OrderStatusUpdate,
     db: DbDep,
-    _: CurrentAdmin,
+    current_admin: CurrentAdmin,
 ) -> AdminOrderView:
+    existing = await db.orders.find_one({"_id": to_object_id(order_id)})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Order not found.")
+
     order = await db.orders.find_one_and_update(
         {"_id": to_object_id(order_id)},
         {"$set": {"status": payload.status, "updated_at": datetime.now(timezone.utc)}},
         return_document=True,
     )
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found.")
 
     user = await db.users.find_one({"_id": order["user_id"]})
     if not user:
         raise HTTPException(status_code=404, detail="Order user not found.")
+
+    previous_status = existing.get("status", "placed")
+    if previous_status != payload.status:
+        await log_activity(
+            db,
+            current_admin["_id"],
+            "order_status_update",
+            f"{str(order['_id'])}: {previous_status} -> {payload.status}",
+        )
 
     return AdminOrderView(
         id=str(order["_id"]),

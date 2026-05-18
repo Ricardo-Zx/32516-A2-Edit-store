@@ -231,6 +231,7 @@ class CartOrdersTests(unittest.IsolatedAsyncioTestCase):
     async def test_admin_can_update_order_status(self):
         user_id = ObjectId()
         order_id = ObjectId()
+        admin_id = ObjectId()
         db = FakeDb(
             users=[{"_id": user_id, "username": "demo", "email": "demo@example.com"}],
             orders=[
@@ -250,11 +251,12 @@ class CartOrdersTests(unittest.IsolatedAsyncioTestCase):
             str(order_id),
             OrderStatusUpdate(status="shipped"),
             db,
-            {"_id": ObjectId(), "role": "admin"},
+            {"_id": admin_id, "role": "admin"},
         )
 
         self.assertEqual(updated.status, "shipped")
         self.assertEqual(db.orders.docs[0]["status"], "shipped")
+        self.assertEqual(db.user_activity.docs[-1]["action"], "order_status_update")
 
 
 if __name__ == "__main__":
