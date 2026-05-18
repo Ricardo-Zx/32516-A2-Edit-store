@@ -10,7 +10,14 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, status
 
 from ..deps import CurrentUser, DbDep
-from ..schemas import TokenOut, UserCreate, UserLogin, UserOut
+from ..schemas import (
+    MessageResponse,
+    PasswordChange,
+    TokenOut,
+    UserCreate,
+    UserLogin,
+    UserOut,
+)
 from ..security import create_access_token, hash_password, verify_password
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -74,3 +81,30 @@ async def login(payload: UserLogin, db: DbDep) -> TokenOut:
 @router.get("/me", response_model=UserOut)
 async def me(current_user: CurrentUser) -> UserOut:
     return serialize_user(current_user)
+
+
+@router.put("/password", response_model=MessageResponse)
+async def change_password(
+    payload: PasswordChange,
+    current_user: CurrentUser,
+    db: DbDep,
+) -> MessageResponse:
+    if not verify_password(payload.current_password, current_user["password_hash"]):
+        raise HTTPException(status_code=400, detail="Current password is incorrect.")
+    if payload.new_password == payload.current_password:
+        raise HTTPException(
+            status_code=400,
+            detail="New password must differ from the current one.",
+        )
+
+    await db.users.update_one(
+        {"_id": current_user["_id"]},
+        {
+            "$set": {
+                "password_hash": hash_password(payload.new_password),
+                "updated_at": datetime.now(timezone.utc),
+            }
+        },
+    )
+    await log_activity(db, current_user["_id"], "password_change")
+    return MessageResponse(message="Password updated successfully.")
