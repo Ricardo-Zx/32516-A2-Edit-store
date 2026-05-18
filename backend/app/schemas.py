@@ -10,6 +10,8 @@ from typing import Literal
 
 from pydantic import BaseModel, EmailStr, Field
 
+OrderStatus = Literal["placed", "processing", "shipped", "cancelled"]
+
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -104,13 +106,17 @@ class OrderOut(BaseModel):
     items: list[OrderItemOut]
     total: float
     item_count: int
-    status: Literal["placed"] = "placed"
+    status: OrderStatus = "placed"
     created_at: datetime
 
 
 class AdminOrderView(OrderOut):
     username: str
     email: EmailStr
+
+
+class OrderStatusUpdate(BaseModel):
+    status: OrderStatus
 
 
 class AdminCartView(BaseModel):

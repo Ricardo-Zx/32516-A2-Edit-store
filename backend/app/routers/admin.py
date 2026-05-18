@@ -9,8 +9,12 @@ from datetime import datetime
 from fastapi import APIRouter, Query
 from pydantic import BaseModel, EmailStr
 
-from ..deps import CurrentAdmin, DbDep
-from ..schemas import AdminCartView, AdminOrderView, OrderItemOut
+from datetime import timezone
+
+from fastapi import HTTPException
+
+from ..deps import CurrentAdmin, DbDep, to_object_id
+from ..schemas import AdminCartView, AdminOrderView, OrderItemOut, OrderStatusUpdate
 from .cart import _build_cart_response
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
@@ -91,6 +95,38 @@ async def list_orders(db: DbDep, _: CurrentAdmin) -> list[AdminOrderView]:
             )
         )
     return results
+
+
+@router.put("/orders/{order_id}", response_model=AdminOrderView)
+async def update_order_status(
+    order_id: str,
+    payload: OrderStatusUpdate,
+    db: DbDep,
+    _: CurrentAdmin,
+) -> AdminOrderView:
+    order = await db.orders.find_one_and_update(
+        {"_id": to_object_id(order_id)},
+        {"$set": {"status": payload.status, "updated_at": datetime.now(timezone.utc)}},
+        return_document=True,
+    )
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found.")
+
+    user = await db.users.find_one({"_id": order["user_id"]})
+    if not user:
+        raise HTTPException(status_code=404, detail="Order user not found.")
+
+    return AdminOrderView(
+        id=str(order["_id"]),
+        user_id=str(order["user_id"]),
+        username=user["username"],
+        email=user["email"],
+        items=[OrderItemOut(**item) for item in order.get("items", [])],
+        total=float(order.get("total", 0)),
+        item_count=int(order.get("item_count", 0)),
+        status=order.get("status", "placed"),
+        created_at=order["created_at"],
+    )
 
 
 @router.get("/activity", response_model=list[ActivityOut])

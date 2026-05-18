@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import sys
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 
 from bson import ObjectId
@@ -12,8 +13,9 @@ BACKEND_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BACKEND_DIR))
 
 from app.routers.cart import add_item  # noqa: E402
+from app.routers.admin import update_order_status  # noqa: E402
 from app.routers.orders import checkout  # noqa: E402
-from app.schemas import CartItemIn  # noqa: E402
+from app.schemas import CartItemIn, OrderStatusUpdate  # noqa: E402
 
 
 def matches_query(doc: dict, query: dict) -> bool:
@@ -100,6 +102,20 @@ class FakeCollection:
             return FakeUpdateResult(1)
         return FakeUpdateResult(0)
 
+    async def find_one_and_update(self, query: dict, update: dict, return_document=True):
+        for index, doc in enumerate(self.docs):
+            if not matches_query(doc, query):
+                continue
+            if "$set" in update:
+                for key, value in update["$set"].items():
+                    doc[key] = value
+            if "$inc" in update:
+                for key, value in update["$inc"].items():
+                    doc[key] = doc.get(key, 0) + value
+            self.docs[index] = doc
+            return copy.deepcopy(doc)
+        return None
+
     async def update_many(self, query: dict, update: dict):
         modified = 0
         for index, doc in enumerate(self.docs):
@@ -122,11 +138,12 @@ class FakeCollection:
 
 
 class FakeDb:
-    def __init__(self, *, products=None, carts=None, orders=None, activity=None):
+    def __init__(self, *, products=None, carts=None, orders=None, activity=None, users=None):
         self.products = FakeCollection(products)
         self.carts = FakeCollection(carts)
         self.orders = FakeCollection(orders)
         self.user_activity = FakeCollection(activity)
+        self.users = FakeCollection(users)
 
 
 class CartOrdersTests(unittest.IsolatedAsyncioTestCase):
@@ -210,6 +227,34 @@ class CartOrdersTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(ctx.exception.status_code, 409)
         self.assertEqual(len(db.orders.docs), 0)
         self.assertEqual(db.products.docs[0]["stock"], 1)
+
+    async def test_admin_can_update_order_status(self):
+        user_id = ObjectId()
+        order_id = ObjectId()
+        db = FakeDb(
+            users=[{"_id": user_id, "username": "demo", "email": "demo@example.com"}],
+            orders=[
+                {
+                    "_id": order_id,
+                    "user_id": user_id,
+                    "items": [],
+                    "total": 80.0,
+                    "item_count": 1,
+                    "status": "placed",
+                    "created_at": datetime.now(timezone.utc),
+                }
+            ],
+        )
+
+        updated = await update_order_status(
+            str(order_id),
+            OrderStatusUpdate(status="shipped"),
+            db,
+            {"_id": ObjectId(), "role": "admin"},
+        )
+
+        self.assertEqual(updated.status, "shipped")
+        self.assertEqual(db.orders.docs[0]["status"], "shipped")
 
 
 if __name__ == "__main__":
