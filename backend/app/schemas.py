@@ -94,6 +94,25 @@ class CartUpdate(BaseModel):
     quantity: int = Field(ge=0, le=99)
 
 
+class OrderItemOut(CartItemOut):
+    pass
+
+
+class OrderOut(BaseModel):
+    id: str
+    user_id: str
+    items: list[OrderItemOut]
+    total: float
+    item_count: int
+    status: Literal["placed"] = "placed"
+    created_at: datetime
+
+
+class AdminOrderView(OrderOut):
+    username: str
+    email: EmailStr
+
+
 class AdminCartView(BaseModel):
     user_id: str
     username: str

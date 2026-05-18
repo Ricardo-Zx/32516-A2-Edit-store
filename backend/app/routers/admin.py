@@ -10,7 +10,7 @@ from fastapi import APIRouter, Query
 from pydantic import BaseModel, EmailStr
 
 from ..deps import CurrentAdmin, DbDep
-from ..schemas import AdminCartView
+from ..schemas import AdminCartView, AdminOrderView, OrderItemOut
 from .cart import _build_cart_response
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
@@ -67,6 +67,29 @@ async def list_all_carts(db: DbDep, _: CurrentAdmin) -> list[AdminCartView]:
             )
         )
     results.sort(key=lambda c: c.updated_at or datetime.min, reverse=True)
+    return results
+
+
+@router.get("/orders", response_model=list[AdminOrderView])
+async def list_orders(db: DbDep, _: CurrentAdmin) -> list[AdminOrderView]:
+    results: list[AdminOrderView] = []
+    async for order in db.orders.find().sort("created_at", -1):
+        user = await db.users.find_one({"_id": order["user_id"]})
+        if not user:
+            continue
+        results.append(
+            AdminOrderView(
+                id=str(order["_id"]),
+                user_id=str(order["user_id"]),
+                username=user["username"],
+                email=user["email"],
+                items=[OrderItemOut(**item) for item in order.get("items", [])],
+                total=float(order.get("total", 0)),
+                item_count=int(order.get("item_count", 0)),
+                status=order.get("status", "placed"),
+                created_at=order["created_at"],
+            )
+        )
     return results
 
 

@@ -15,7 +15,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .config import get_settings
 from .database import close_mongo_connection, connect_to_mongo
-from .routers import admin, auth, cart, products
+from .routers import admin, auth, cart, orders, products
 
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 
@@ -41,6 +41,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(products.router)
 app.include_router(cart.router)
+app.include_router(orders.router)
 app.include_router(admin.router)
 
 STATIC_DIR.mkdir(parents=True, exist_ok=True)
