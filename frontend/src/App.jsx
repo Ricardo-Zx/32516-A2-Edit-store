@@ -14,6 +14,7 @@ import AdminPage from "./pages/AdminPage";
 import CartPage from "./pages/CartPage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
+import OrdersPage from "./pages/OrdersPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import ProductsPage from "./pages/ProductsPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -48,6 +49,14 @@ export default function App() {
             element={
               <RequireAuth>
                 <CartPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/orders"
+            element={
+              <RequireAuth>
+                <OrdersPage />
               </RequireAuth>
             }
           />

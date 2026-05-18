@@ -122,6 +122,15 @@ export default function Navbar() {
                   <MenuItem key="hello" disabled>
                     Hi, {user.username}
                   </MenuItem>,
+                  <MenuItem
+                    key="orders"
+                    onClick={() => {
+                      setAccountAnchor(null);
+                      navigate("/orders");
+                    }}
+                  >
+                    Orders
+                  </MenuItem>,
                   <MenuItem key="logout" onClick={handleLogout}>
                     Sign out
                   </MenuItem>,

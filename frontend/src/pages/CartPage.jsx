@@ -1,6 +1,6 @@
 /**
  * CartPage — the shopping bag: line items, quantity steppers, order
- * summary and a mock checkout that clears the bag.
+ * summary and a real checkout that creates an order on the backend.
  *
  * @author Frontend (teammate — TBD)
  */
@@ -8,21 +8,32 @@ import { Box, Button, Container, Divider, IconButton, Stack, Typography } from "
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import RemoveIcon from "@mui/icons-material/Remove";
 import AddIcon from "@mui/icons-material/Add";
+import { useState } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 
+import api, { describeError } from "../api";
 import { useCart } from "../context/CartContext";
 import { useToast } from "../context/ToastContext";
 
 export default function CartPage() {
-  const { cart, updateItem, removeItem, clear } = useCart();
+  const { cart, updateItem, removeItem, clear, refresh } = useCart();
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const [busy, setBusy] = useState(false);
 
   const handleCheckout = async () => {
-    if (!cart.items.length) return;
-    await clear();
-    showToast("Order placed! Thanks for shopping.", "success");
-    navigate("/");
+    if (!cart.items.length || busy) return;
+    setBusy(true);
+    try {
+      const { data } = await api.post("/orders");
+      await refresh();
+      showToast(`Order placed. ${data.item_count} item(s) confirmed.`, "success");
+      navigate("/orders");
+    } catch (error) {
+      showToast(describeError(error, "Checkout failed."), "error");
+    } finally {
+      setBusy(false);
+    }
   };
 
   if (!cart.items.length) {
@@ -119,8 +130,8 @@ export default function CartPage() {
             <Typography variant="h6">Total</Typography>
             <Typography variant="h6">${cart.total.toFixed(2)}</Typography>
           </Stack>
-          <Button variant="contained" fullWidth size="large" onClick={handleCheckout}>
-            Checkout
+          <Button variant="contained" fullWidth size="large" onClick={handleCheckout} disabled={busy}>
+            {busy ? "Placing order..." : "Checkout"}
           </Button>
           <Button variant="text" fullWidth sx={{ mt: 1 }} onClick={() => clear()}>
             Empty bag
