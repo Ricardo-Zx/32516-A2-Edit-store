@@ -9,11 +9,13 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
+import ScrollToTop from "./components/ScrollToTop";
 import { useAuth } from "./context/AuthContext";
 import AdminPage from "./pages/AdminPage";
 import CartPage from "./pages/CartPage";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
+import NotFoundPage from "./pages/NotFoundPage";
 import OrdersPage from "./pages/OrdersPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import ProductsPage from "./pages/ProductsPage";
@@ -36,6 +38,7 @@ function RequireAdmin({ children }) {
 export default function App() {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", bgcolor: "background.default" }}>
+      <ScrollToTop />
       <Navbar />
       <Box component="main" sx={{ flex: 1 }}>
         <Routes>
@@ -68,7 +71,7 @@ export default function App() {
               </RequireAdmin>
             }
           />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Box>
       <Footer />
