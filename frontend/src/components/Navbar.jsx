@@ -123,6 +123,15 @@ export default function Navbar() {
                     Hi, {user.username}
                   </MenuItem>,
                   <MenuItem
+                    key="profile"
+                    onClick={() => {
+                      setAccountAnchor(null);
+                      navigate("/profile");
+                    }}
+                  >
+                    My account
+                  </MenuItem>,
+                  <MenuItem
                     key="orders"
                     onClick={() => {
                       setAccountAnchor(null);
