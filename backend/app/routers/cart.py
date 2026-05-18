@@ -74,11 +74,22 @@ async def add_item(payload: CartItemIn, current_user: CurrentUser, db: DbDep) ->
     product = await db.products.find_one({"_id": to_object_id(payload.product_id)})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found.")
+    if product.get("stock", 0) <= 0:
+        raise HTTPException(status_code=409, detail="Product is out of stock.")
 
     cart = await _get_or_create_cart(db, current_user["_id"])
     existing = next((it for it in cart["items"] if it["product_id"] == payload.product_id), None)
+    next_quantity = payload.quantity
     if existing:
-        existing["quantity"] = min(99, existing["quantity"] + payload.quantity)
+        next_quantity = existing["quantity"] + payload.quantity
+    if next_quantity > min(99, int(product.get("stock", 0))):
+        raise HTTPException(
+            status_code=409,
+            detail=f"Only {int(product.get('stock', 0))} item(s) left in stock.",
+        )
+
+    if existing:
+        existing["quantity"] = next_quantity
     else:
         cart["items"].append({"product_id": payload.product_id, "quantity": payload.quantity})
 
@@ -97,6 +108,10 @@ async def update_item(
     current_user: CurrentUser,
     db: DbDep,
 ) -> CartOut:
+    product = await db.products.find_one({"_id": to_object_id(product_id)})
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found.")
+
     cart = await _get_or_create_cart(db, current_user["_id"])
     items = cart["items"]
     found = False
@@ -106,6 +121,11 @@ async def update_item(
             found = True
             if payload.quantity == 0:
                 continue
+            if payload.quantity > min(99, int(product.get("stock", 0))):
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"Only {int(product.get('stock', 0))} item(s) left in stock.",
+                )
             item["quantity"] = payload.quantity
         new_items.append(item)
 
@@ -131,6 +151,7 @@ async def remove_item(product_id: str, current_user: CurrentUser, db: DbDep) -> 
         {"$set": {"items": new_items, "updated_at": datetime.now(timezone.utc)}},
     )
     cart["items"] = new_items
+    await log_activity(db, current_user["_id"], "cart_remove", product_id)
     return await _build_cart_response(db, cart)
 
 
@@ -140,4 +161,5 @@ async def clear_cart(current_user: CurrentUser, db: DbDep) -> MessageResponse:
         {"user_id": current_user["_id"]},
         {"$set": {"items": [], "updated_at": datetime.now(timezone.utc)}},
     )
+    await log_activity(db, current_user["_id"], "cart_clear")
     return MessageResponse(message="Cart cleared.")
