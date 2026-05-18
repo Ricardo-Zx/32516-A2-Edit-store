@@ -23,6 +23,8 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     setQty(1);
+    setError("");
+    setProduct(null);
     api
       .get(`/products/${id}`)
       .then(({ data }) => setProduct(data))
@@ -54,11 +56,14 @@ export default function ProductDetailPage() {
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 4, md: 6 } }}>
       <Grid container spacing={{ xs: 4, md: 8 }}>
-        <Grid item xs={12} md={7}>
+        <Grid item xs={12} md={6}>
           <Box
             sx={{
               bgcolor: "#f5f5f5",
-              aspectRatio: "1 / 1.2",
+              width: "100%",
+              maxWidth: 460,
+              mx: "auto",
+              aspectRatio: "1 / 1",
               overflow: "hidden",
               display: "flex",
               alignItems: "center",
@@ -73,7 +78,7 @@ export default function ProductDetailPage() {
             />
           </Box>
         </Grid>
-        <Grid item xs={12} md={5}>
+        <Grid item xs={12} md={6}>
           <Stack spacing={3} sx={{ position: "sticky", top: 96 }}>
             <Box>
               <Typography variant="overline" color="text.secondary">
