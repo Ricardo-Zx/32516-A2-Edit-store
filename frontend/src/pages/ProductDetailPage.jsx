@@ -4,7 +4,9 @@
  *
  * @author Frontend (teammate — TBD)
  */
-import { Box, Button, Chip, CircularProgress, Container, Grid, Stack, Typography } from "@mui/material";
+import { Box, Button, Chip, CircularProgress, Container, Grid, IconButton, Stack, Typography } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -17,13 +19,18 @@ export default function ProductDetailPage() {
   const { addItem } = useCart();
   const [product, setProduct] = useState(null);
   const [error, setError] = useState("");
+  const [qty, setQty] = useState(1);
 
   useEffect(() => {
+    setQty(1);
     api
       .get(`/products/${id}`)
       .then(({ data }) => setProduct(data))
       .catch(() => setError("Product not found."));
   }, [id]);
+
+  const maxQty = product ? Math.min(99, product.stock) : 1;
+  const clampQty = (value) => Math.max(1, Math.min(maxQty, value));
 
   if (error) {
     return (
@@ -86,14 +93,40 @@ export default function ProductDetailPage() {
             <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
               {product.description || "Crafted with care from soft, breathable fabrics for an effortless everyday fit."}
             </Typography>
+            {product.stock > 0 && (
+              <Stack direction="row" alignItems="center" spacing={2}>
+                <Typography variant="overline" sx={{ letterSpacing: "0.2em", color: "text.secondary" }}>
+                  Quantity
+                </Typography>
+                <Stack direction="row" alignItems="center" sx={{ border: "1px solid #d8d2cb" }}>
+                  <IconButton
+                    size="small"
+                    aria-label="decrease quantity"
+                    onClick={() => setQty((value) => clampQty(value - 1))}
+                    disabled={qty <= 1}
+                  >
+                    <RemoveIcon fontSize="small" />
+                  </IconButton>
+                  <Typography sx={{ minWidth: 36, textAlign: "center" }}>{qty}</Typography>
+                  <IconButton
+                    size="small"
+                    aria-label="increase quantity"
+                    onClick={() => setQty((value) => clampQty(value + 1))}
+                    disabled={qty >= maxQty}
+                  >
+                    <AddIcon fontSize="small" />
+                  </IconButton>
+                </Stack>
+              </Stack>
+            )}
             <Button
               variant="contained"
               size="large"
               fullWidth
-              onClick={() => addItem(product.id, 1)}
+              onClick={() => addItem(product.id, qty)}
               disabled={product.stock === 0}
             >
-              {product.stock === 0 ? "Sold out" : "Add to bag"}
+              {product.stock === 0 ? "Sold out" : `Add ${qty} to bag`}
             </Button>
             <Typography variant="caption" color="text.secondary">
               {product.stock} in stock · Department: {product.department || "—"}
