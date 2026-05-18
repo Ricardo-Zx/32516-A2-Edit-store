@@ -1,0 +1,30 @@
+# Secrets
+.env
+.env.local
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# Data
+data/raw/
+backend/static/images/
+
+# IDE / tooling
+.idea/
+.vscode/
+.claude/
+.DS_Store
+
+# Old extracted prototype
+A3-smart-checkout-webapp/
+A3-smart-checkout-webapp-share.tar.gz
+a1-expense-tracker/
