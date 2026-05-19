@@ -22,24 +22,46 @@ export default function ProductCard({ product }) {
           display: "block",
           textDecoration: "none",
           color: "inherit",
-          "&:hover .product-image": { transform: "scale(1.05)" },
+          "&:hover .product-image": { transform: "scale(1.03)" },
           "&:hover .product-meta": { transform: "translateY(-3px)" },
         }}
       >
-        <Box sx={{ overflow: "hidden", aspectRatio: "3 / 4", bgcolor: "#eee6db" }}>
+        <Box
+          sx={{
+            overflow: "hidden",
+            minHeight: { xs: 250, md: 276 },
+            bgcolor: "#f4ede4",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            p: { xs: 2, md: 2.75 },
+          }}
+        >
           <Box
-            component="img"
-            className="product-image"
-            src={product.image}
-            alt={product.name}
-            loading="lazy"
             sx={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              transition: "transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1)",
+              width: "min(100%, 256px)",
+              aspectRatio: "1 / 1",
+              bgcolor: "#fbfaf7",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-          />
+          >
+            <Box
+              component="img"
+              className="product-image"
+              src={product.image}
+              alt={product.name}
+              loading="lazy"
+              sx={{
+                width: "100%",
+                maxWidth: 256,
+                aspectRatio: "1 / 1",
+                objectFit: "contain",
+                transition: "transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1)",
+              }}
+            />
+          </Box>
         </Box>
         <Box className="product-meta" sx={{ pt: 2.25, pb: 4, transition: "transform 280ms ease" }}>
           <Typography

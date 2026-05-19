@@ -4,7 +4,7 @@
  *
  * @author Frontend (teammate — TBD)
  */
-import { Box, Button, Chip, CircularProgress, Container, Grid, IconButton, Stack, Typography } from "@mui/material";
+import { Box, Button, Chip, CircularProgress, Container, IconButton, Stack, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import { useEffect, useState } from "react";
@@ -16,15 +16,17 @@ import { useCart } from "../context/CartContext";
 export default function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addItem } = useCart();
+  const { addItem, addingItemId } = useCart();
   const [product, setProduct] = useState(null);
   const [error, setError] = useState("");
   const [qty, setQty] = useState(1);
+  const [addedFeedback, setAddedFeedback] = useState(false);
 
   useEffect(() => {
     setQty(1);
     setError("");
     setProduct(null);
+    setAddedFeedback(false);
     api
       .get(`/products/${id}`)
       .then(({ data }) => setProduct(data))
@@ -33,6 +35,7 @@ export default function ProductDetailPage() {
 
   const maxQty = product ? Math.min(99, product.stock) : 1;
   const clampQty = (value) => Math.max(1, Math.min(maxQty, value));
+  const isAdding = addingItemId === product?.id;
 
   if (error) {
     return (
@@ -54,32 +57,33 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 4, md: 6 } }}>
-      <Grid container spacing={{ xs: 4, md: 8 }}>
-        <Grid item xs={12} md={6}>
+    <Container maxWidth="lg" sx={{ py: { xs: 5, md: 10 } }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          gap: { xs: 4, md: 9 },
+          alignItems: { md: "center" },
+          justifyContent: "center",
+        }}
+      >
+        <Box
+          sx={{
+            flexShrink: 0,
+            width: { xs: "100%", md: 460 },
+            aspectRatio: "1 / 1",
+            bgcolor: "#f5f5f5",
+            overflow: "hidden",
+          }}
+        >
           <Box
-            sx={{
-              bgcolor: "#f5f5f5",
-              width: "100%",
-              maxWidth: 460,
-              mx: "auto",
-              aspectRatio: "1 / 1",
-              overflow: "hidden",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Box
-              component="img"
-              src={product.image}
-              alt={product.name}
-              sx={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-          </Box>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <Stack spacing={3} sx={{ position: "sticky", top: 96 }}>
+            component="img"
+            src={product.image}
+            alt={product.name}
+            sx={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        </Box>
+        <Stack spacing={3} sx={{ width: { xs: "100%", md: 420 }, flexShrink: 0 }}>
             <Box>
               <Typography variant="overline" color="text.secondary">
                 {product.category}
@@ -128,17 +132,32 @@ export default function ProductDetailPage() {
               variant="contained"
               size="large"
               fullWidth
-              onClick={() => addItem(product.id, qty)}
-              disabled={product.stock === 0}
+              onClick={async () => {
+                if (addedFeedback) {
+                  navigate("/cart");
+                  return;
+                }
+                const result = await addItem(product.id, qty);
+                if (result?.ok) {
+                  setAddedFeedback(true);
+                  window.setTimeout(() => setAddedFeedback(false), 1600);
+                }
+              }}
+              disabled={product.stock === 0 || isAdding}
             >
-              {product.stock === 0 ? "Sold out" : `Add ${qty} to bag`}
+              {product.stock === 0
+                ? "Sold out"
+                : isAdding
+                  ? "Adding..."
+                  : addedFeedback
+                    ? "Added · View bag"
+                    : `Add ${qty} to bag`}
             </Button>
             <Typography variant="caption" color="text.secondary">
               {product.stock} in stock · Department: {product.department || "—"}
             </Typography>
           </Stack>
-        </Grid>
-      </Grid>
+      </Box>
     </Container>
   );
 }
