@@ -162,6 +162,7 @@ Open <http://localhost:5173>.
 | DELETE | `/api/cart`                   | user   | Clear cart                               |
 | POST   | `/api/orders`                 | user   | Checkout cart into a real order          |
 | GET    | `/api/orders`                 | user   | Current user's order history             |
+| POST   | `/api/orders/{id}/cancel`     | user   | Cancel a non-shipped order               |
 | GET    | `/api/admin/stats`            | admin  | Store overview metrics                   |
 | GET    | `/api/admin/users`            | admin  | All users                                |
 | GET    | `/api/admin/carts`            | admin  | All users' carts                         |
@@ -176,15 +177,15 @@ This is a two-person group. Every source file carries an `Author:` /
 
 | Member | Student ID | Role |
 | ------ | ---------- | ---- |
-| Yuchang Zhang | 25678259 | Led backend architecture and implementation, including authentication, database API design, cart/order workflows, admin services, testing, and overall system integration. Also contributed selected customer-facing frontend flows. |
-| Mengshan Wang | 25633241 | Led frontend implementation and UI refinement, including the homepage, product catalogue, product detail presentation, navigation, and admin-side interface polish. Also contributed to documentation and demo preparation. |
+| Yuchang Zhang | 25678259 | Led backend architecture, API implementation, authentication, cart/order workflows, admin services, testing, and overall system integration. Also implemented selected customer-facing frontend flows. |
+| Mengshan Wang | 25633241 | Led frontend implementation, interface design refinement, homepage and catalogue presentation, product-detail experience, navigation, and admin-side interface polish. Also contributed to documentation and demo preparation. |
 
 ### File ownership
 
 **Yuchang Zhang**
 
 - Backend — `backend/app/config.py`, `backend/app/database.py`, `backend/app/deps.py`, `backend/app/security.py`, `backend/app/main.py`, `backend/app/schemas.py`
-- Backend routers — `backend/app/routers/auth.py`, `products.py`, `cart.py`, `orders.py`, `admin.py`
+- Backend routers — `backend/app/routers/auth.py`, `backend/app/routers/products.py`, `backend/app/routers/cart.py`, `backend/app/routers/orders.py`, `backend/app/routers/admin.py`
 - Data & tests — `backend/seed.py`, `backend/tests/test_cart_orders.py`, `scripts/build_sample.py`, `scripts/download_hm.sh`
 - Frontend flows — `frontend/src/App.jsx`, `frontend/src/lib/productCache.js`, `frontend/src/context/CartContext.jsx`, `frontend/src/pages/CartPage.jsx`, `frontend/src/pages/OrdersPage.jsx`, `frontend/src/pages/ProfilePage.jsx`
 
@@ -199,9 +200,10 @@ Project scaffolding and configuration (`.gitignore`, `.env.example`,
 `backend/requirements.txt`, `frontend/package.json`,
 `frontend/vite.config.js`) were set up jointly.
 
-> Note: Mengshan Wang does not use GitHub, so commits were pushed from
-> Yuchang Zhang's account. Per-file authorship is recorded in the header
-> comment of every source file and matches the table above.
+> Final repository integration, cleanup, and publishing were coordinated
+> through Yuchang Zhang's GitHub account. Individual responsibilities are
+> reflected in the workload allocation table and per-file authorship
+> comments.
 
 ## Notes
 
