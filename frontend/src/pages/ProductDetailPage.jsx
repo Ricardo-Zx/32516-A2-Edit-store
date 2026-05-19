@@ -125,7 +125,7 @@ export default function ProductDetailPage() {
               {product.product_type && <Chip label={product.product_type} size="small" variant="outlined" />}
             </Stack>
             <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
-              {product.description || "Crafted with care from soft, breathable fabrics for an effortless everyday fit."}
+              {product.description || "Chosen for the current edit, with an easy place in everyday wear."}
             </Typography>
             {product.stock > 0 && (
               <Stack direction="row" alignItems="center" spacing={2}>

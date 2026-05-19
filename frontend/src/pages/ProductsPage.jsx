@@ -178,7 +178,7 @@ export default function ProductsPage() {
             {HEADLINES[gender] || "The collection."}
           </Typography>
           <Typography color="text.secondary" sx={{ mt: 1.5, maxWidth: 520, lineHeight: 1.7 }}>
-            A curated edit shaped by clean lines, warmer neutrals and everyday pieces that still feel composed.
+            A refined edit of pieces to wear now.
           </Typography>
         </Box>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2.25 }}>

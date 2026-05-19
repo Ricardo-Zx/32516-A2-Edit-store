@@ -156,13 +156,13 @@ export default function HomePage() {
                   letterSpacing: "-0.04em",
                 }}
               >
-                Modern tailoring
+                Quiet structure.
                 <br />
-                with a restless edge.
+                Modern ease.
               </Typography>
               <Typography sx={{ maxWidth: 420, color: "rgba(248,242,234,0.82)", lineHeight: 1.8 }}>
-                Built like an editorial storefront: statement pieces first, then a clean path
-                into women, men, shoes, bags, and the week&apos;s sharpest arrivals.
+                An elevated edit of everyday dressing, shaped across women&apos;s,
+                men&apos;s, shoes, and bags.
               </Typography>
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ pt: 1 }}>
                 <Button component={RouterLink} to="/shop" variant="contained" size="large">
@@ -196,7 +196,7 @@ export default function HomePage() {
                 lineHeight: 0.95,
               }}
             >
-              The first row should pull you in.
+              Objects of interest.
             </Typography>
           </Box>
         </Stack>
@@ -242,7 +242,7 @@ export default function HomePage() {
               letterSpacing: "-0.03em",
             }}
           >
-            Women and men, framed like campaigns.
+            Distinct edits for women and men.
           </Typography>
         </Stack>
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 2 }}>
@@ -429,7 +429,7 @@ export default function HomePage() {
                 lineHeight: 0.95,
               }}
             >
-              The full rail, cleaned up for browsing.
+              New arrivals.
             </Typography>
           </Box>
           <Button component={RouterLink} to="/shop" sx={{ fontSize: 12 }}>
