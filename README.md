@@ -170,7 +170,7 @@ This is a two-person group. Every source file carries an `Author:` /
 | Member | Student ID | Role |
 | ------ | ---------- | ---- |
 | Yuchang Zhang | 25678259 | Led backend architecture and implementation, including authentication, database API design, cart/order workflows, admin services, testing, and overall system integration. Also contributed selected customer-facing frontend flows. |
-| Mengshan Wang | _to be added_ | Led frontend implementation and UI refinement, including the homepage, product catalogue, product detail presentation, navigation, and admin-side interface polish. Also contributed to documentation and demo preparation. |
+| Mengshan Wang | 25633241 | Led frontend implementation and UI refinement, including the homepage, product catalogue, product detail presentation, navigation, and admin-side interface polish. Also contributed to documentation and demo preparation. |
 
 ### File ownership
 
@@ -194,8 +194,7 @@ Project scaffolding and configuration (`.gitignore`, `.env.example`,
 
 > Note: Mengshan Wang does not use GitHub, so commits were pushed from
 > Yuchang Zhang's account. Per-file authorship is recorded in the header
-> comment of every source file and matches the table above. Replace
-> _to be added_ with Mengshan's student ID before submission.
+> comment of every source file and matches the table above.
 
 ## Notes
 
