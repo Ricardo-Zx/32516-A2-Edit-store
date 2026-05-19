@@ -33,6 +33,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { useEffect, useState } from "react";
 
 import api, { describeError } from "../api";
+import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 
 const EMPTY_PRODUCT = {
@@ -54,6 +55,13 @@ const ORDER_STATUS_OPTIONS = [
   { value: "shipped", label: "Shipped" },
   { value: "cancelled", label: "Cancelled" },
 ];
+
+const ORDER_STATUS_COLORS = {
+  placed: "default",
+  processing: "warning",
+  shipped: "success",
+  cancelled: "error",
+};
 
 export default function AdminPage() {
   const [tab, setTab] = useState(0);
@@ -208,12 +216,49 @@ function OverviewPanel() {
   );
 }
 
-function UsersPanel() {
-  const { data, loading, error } = useFetch("/admin/users");
+function UsersPanel({ showToast }) {
+  const { user: currentUser } = useAuth();
+  const [users, setUsers] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [pendingId, setPendingId] = useState("");
+
+  const reload = async () => {
+    setLoading(true);
+    try {
+      const { data } = await api.get("/admin/users");
+      setUsers(data);
+      setError("");
+    } catch (err) {
+      setError(describeError(err, "Failed to load."));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const changeRole = async (targetUser) => {
+    const nextRole = targetUser.role === "admin" ? "user" : "admin";
+    setPendingId(targetUser.id);
+    try {
+      await api.put(`/admin/users/${targetUser.id}/role`, { role: nextRole });
+      showToast(`${targetUser.username} is now ${nextRole}.`);
+      await reload();
+    } catch (err) {
+      showToast(describeError(err, "Could not update role."), "error");
+    } finally {
+      setPendingId("");
+    }
+  };
+
   return (
     <>
-      <PanelStatus loading={loading} error={error} empty={data && !data.length} emptyText="No users yet." />
-      {data && data.length > 0 && (
+      <PanelStatus loading={loading} error={error} empty={users && !users.length} emptyText="No users yet." />
+      {users && users.length > 0 && (
         <Table>
           <TableHead>
             <TableRow>
@@ -221,23 +266,41 @@ function UsersPanel() {
               <TableCell>Email</TableCell>
               <TableCell>Role</TableCell>
               <TableCell>Joined</TableCell>
+              <TableCell align="right">Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {data.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>{user.username}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>
-                  <Chip
-                    size="small"
-                    label={user.role}
-                    color={user.role === "admin" ? "primary" : "default"}
-                  />
-                </TableCell>
-                <TableCell>{new Date(user.created_at).toLocaleString()}</TableCell>
-              </TableRow>
-            ))}
+            {users.map((user) => {
+              const isSelf = user.id === currentUser?.id;
+              return (
+                <TableRow key={user.id}>
+                  <TableCell>{user.username}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>
+                    <Chip
+                      size="small"
+                      label={user.role}
+                      color={user.role === "admin" ? "primary" : "default"}
+                    />
+                  </TableCell>
+                  <TableCell>{new Date(user.created_at).toLocaleString()}</TableCell>
+                  <TableCell align="right">
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      disabled={isSelf || pendingId === user.id}
+                      onClick={() => changeRole(user)}
+                    >
+                      {isSelf
+                        ? "You"
+                        : user.role === "admin"
+                          ? "Revoke admin"
+                          : "Make admin"}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       )}
@@ -376,6 +439,11 @@ function OrdersPanel({ showToast }) {
                   </Typography>
                 </Box>
                 <Stack direction="row" spacing={2} alignItems="center">
+                  <Chip
+                    size="small"
+                    label={ORDER_STATUS_OPTIONS.find((option) => option.value === order.status)?.label || order.status}
+                    color={ORDER_STATUS_COLORS[order.status] || "default"}
+                  />
                   <TextField
                     select
                     size="small"

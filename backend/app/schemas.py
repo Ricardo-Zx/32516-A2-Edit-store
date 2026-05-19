@@ -124,6 +124,10 @@ class OrderStatusUpdate(BaseModel):
     status: OrderStatus
 
 
+class RoleUpdate(BaseModel):
+    role: Literal["user", "admin"]
+
+
 class AdminCartView(BaseModel):
     user_id: str
     username: str

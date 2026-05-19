@@ -14,7 +14,13 @@ from datetime import timezone
 from fastapi import HTTPException
 
 from ..deps import CurrentAdmin, DbDep, to_object_id
-from ..schemas import AdminCartView, AdminOrderView, OrderItemOut, OrderStatusUpdate
+from ..schemas import (
+    AdminCartView,
+    AdminOrderView,
+    OrderItemOut,
+    OrderStatusUpdate,
+    RoleUpdate,
+)
 from .auth import log_activity
 from .cart import _build_cart_response
 
@@ -104,6 +110,46 @@ async def list_users(db: DbDep, _: CurrentAdmin) -> list[AdminUserOut]:
         )
         async for u in db.users.find().sort("created_at", -1)
     ]
+
+
+@router.put("/users/{user_id}/role", response_model=AdminUserOut)
+async def update_user_role(
+    user_id: str,
+    payload: RoleUpdate,
+    db: DbDep,
+    current_admin: CurrentAdmin,
+) -> AdminUserOut:
+    target_id = to_object_id(user_id)
+    if target_id == current_admin["_id"]:
+        raise HTTPException(
+            status_code=400,
+            detail="You cannot change your own role.",
+        )
+
+    existing = await db.users.find_one({"_id": target_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    if existing.get("role", "user") != payload.role:
+        await db.users.update_one(
+            {"_id": target_id},
+            {"$set": {"role": payload.role, "updated_at": datetime.now(timezone.utc)}},
+        )
+        await log_activity(
+            db,
+            current_admin["_id"],
+            "role_update",
+            f"{existing['email']}: {existing.get('role', 'user')} -> {payload.role}",
+        )
+
+    updated = await db.users.find_one({"_id": target_id})
+    return AdminUserOut(
+        id=str(updated["_id"]),
+        email=updated["email"],
+        username=updated["username"],
+        role=updated.get("role", "user"),
+        created_at=updated["created_at"],
+    )
 
 
 @router.get("/carts", response_model=list[AdminCartView])
