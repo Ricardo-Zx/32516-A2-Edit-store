@@ -113,6 +113,7 @@ class OrderOut(BaseModel):
     item_count: int
     status: OrderStatus = "placed"
     created_at: datetime
+    updated_at: datetime | None = None
 
 
 class AdminOrderView(OrderOut):

@@ -14,7 +14,7 @@ sys.path.insert(0, str(BACKEND_DIR))
 
 from app.routers.cart import add_item  # noqa: E402
 from app.routers.admin import update_order_status  # noqa: E402
-from app.routers.orders import checkout  # noqa: E402
+from app.routers.orders import cancel_my_order, checkout  # noqa: E402
 from app.schemas import CartItemIn, OrderStatusUpdate  # noqa: E402
 
 
@@ -257,6 +257,52 @@ class CartOrdersTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(updated.status, "shipped")
         self.assertEqual(db.orders.docs[0]["status"], "shipped")
         self.assertEqual(db.user_activity.docs[-1]["action"], "order_status_update")
+
+    async def test_user_can_cancel_non_shipped_order_and_restore_stock(self):
+        user_id = ObjectId()
+        order_id = ObjectId()
+        product_id = ObjectId()
+        db = FakeDb(
+            products=[
+                {
+                    "_id": product_id,
+                    "name": "Loafers",
+                    "price": 99.0,
+                    "image": "/loafer.jpg",
+                    "color": "Black",
+                    "stock": 1,
+                }
+            ],
+            orders=[
+                {
+                    "_id": order_id,
+                    "user_id": user_id,
+                    "items": [
+                        {
+                            "product_id": str(product_id),
+                            "quantity": 2,
+                            "name": "Loafers",
+                            "price": 99.0,
+                            "image": "/loafer.jpg",
+                            "color": "Black",
+                            "subtotal": 198.0,
+                        }
+                    ],
+                    "total": 198.0,
+                    "item_count": 2,
+                    "status": "placed",
+                    "created_at": datetime.now(timezone.utc),
+                    "updated_at": datetime.now(timezone.utc),
+                }
+            ],
+        )
+
+        updated = await cancel_my_order(str(order_id), {"_id": user_id}, db)
+
+        self.assertEqual(updated.status, "cancelled")
+        self.assertEqual(db.orders.docs[0]["status"], "cancelled")
+        self.assertEqual(db.products.docs[0]["stock"], 3)
+        self.assertEqual(db.user_activity.docs[-1]["action"], "order_cancel")
 
 
 if __name__ == "__main__":

@@ -26,6 +26,7 @@ def serialize_order(doc: dict) -> OrderOut:
         item_count=int(doc.get("item_count", 0)),
         status=doc.get("status", "placed"),
         created_at=doc["created_at"],
+        updated_at=doc.get("updated_at"),
     )
 
 
@@ -117,3 +118,31 @@ async def list_my_orders(current_user: CurrentUser, db: DbDep) -> list[OrderOut]
         serialize_order(doc)
         async for doc in db.orders.find({"user_id": current_user["_id"]}).sort("created_at", -1)
     ]
+
+
+@router.post("/{order_id}/cancel", response_model=OrderOut)
+async def cancel_my_order(order_id: str, current_user: CurrentUser, db: DbDep) -> OrderOut:
+    order = await db.orders.find_one({"_id": to_object_id(order_id), "user_id": current_user["_id"]})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found.")
+
+    current_status = order.get("status", "placed")
+    if current_status == "cancelled":
+        return serialize_order(order)
+    if current_status == "shipped":
+        raise HTTPException(status_code=409, detail="Shipped orders can no longer be cancelled.")
+
+    for item in order.get("items", []):
+        await db.products.update_one(
+            {"_id": to_object_id(item["product_id"])},
+            {"$inc": {"stock": int(item["quantity"])}},
+        )
+
+    updated_at = datetime.now(timezone.utc)
+    updated = await db.orders.find_one_and_update(
+        {"_id": to_object_id(order_id), "user_id": current_user["_id"]},
+        {"$set": {"status": "cancelled", "updated_at": updated_at}},
+        return_document=True,
+    )
+    await log_activity(db, current_user["_id"], "order_cancel", str(order["_id"]))
+    return serialize_order(updated)
