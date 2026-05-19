@@ -16,7 +16,7 @@ import { useCart } from "../context/CartContext";
 import { useToast } from "../context/ToastContext";
 
 export default function CartPage() {
-  const { cart, updateItem, removeItem, clear, refresh } = useCart();
+  const { cart, updateItem, removeItem, clear, refresh, pendingItemIds } = useCart();
   const { showToast } = useToast();
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
@@ -60,7 +60,12 @@ export default function CartPage() {
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "2fr 1fr" }, gap: 6 }}>
         <Stack divider={<Divider />} spacing={3}>
           {cart.items.map((item) => (
-            <Stack key={item.product_id} direction="row" spacing={3}>
+            <Stack
+              key={item.product_id}
+              direction="row"
+              spacing={3}
+              sx={{ opacity: pendingItemIds.includes(item.product_id) ? 0.55 : 1, transition: "opacity 180ms ease" }}
+            >
               <Box
                 component="img"
                 src={item.image}
@@ -84,6 +89,7 @@ export default function CartPage() {
                     <IconButton
                       size="small"
                       onClick={() => updateItem(item.product_id, Math.max(0, item.quantity - 1))}
+                      disabled={pendingItemIds.includes(item.product_id)}
                     >
                       <RemoveIcon fontSize="small" />
                     </IconButton>
@@ -91,13 +97,14 @@ export default function CartPage() {
                     <IconButton
                       size="small"
                       onClick={() => updateItem(item.product_id, item.quantity + 1)}
+                      disabled={pendingItemIds.includes(item.product_id)}
                     >
                       <AddIcon fontSize="small" />
                     </IconButton>
                   </Stack>
                   <Stack direction="row" alignItems="center" spacing={2}>
                     <Typography sx={{ fontWeight: 500 }}>${item.subtotal.toFixed(2)}</Typography>
-                    <IconButton onClick={() => removeItem(item.product_id)}>
+                    <IconButton onClick={() => removeItem(item.product_id)} disabled={pendingItemIds.includes(item.product_id)}>
                       <DeleteOutlineIcon />
                     </IconButton>
                   </Stack>
@@ -133,7 +140,7 @@ export default function CartPage() {
           <Button variant="contained" fullWidth size="large" onClick={handleCheckout} disabled={busy}>
             {busy ? "Placing order..." : "Checkout"}
           </Button>
-          <Button variant="text" fullWidth sx={{ mt: 1 }} onClick={() => clear()}>
+          <Button variant="text" fullWidth sx={{ mt: 1 }} onClick={() => clear()} disabled={busy}>
             Empty bag
           </Button>
         </Box>

@@ -44,6 +44,13 @@ const HEADLINES = {
   kids: "Little edits.",
 };
 
+function formatPriceBand(minPrice, maxPrice) {
+  if (!minPrice && !maxPrice) return "";
+  if (!minPrice) return `Under $${maxPrice}`;
+  if (!maxPrice) return `$${minPrice}+`;
+  return `$${minPrice}-$${maxPrice}`;
+}
+
 export default function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
@@ -123,50 +130,158 @@ export default function ProductsPage() {
     return `${products.length} item${products.length === 1 ? "" : "s"}`;
   }, [loading, products]);
 
+  const activeFilters = useMemo(() => {
+    const filters = [];
+    if (gender) filters.push(gender);
+    if (category) filters.push(category);
+    if (query) filters.push(`"${query}"`);
+    const priceLabel = formatPriceBand(minPrice, maxPrice);
+    if (priceLabel) filters.push(priceLabel);
+    if (sort !== "newest") {
+      const sortLabel = SORT_OPTIONS.find((option) => option.value === sort)?.label;
+      if (sortLabel) filters.push(sortLabel);
+    }
+    return filters;
+  }, [gender, category, query, minPrice, maxPrice, sort]);
+
+  const clearFilters = () => {
+    const next = new URLSearchParams();
+    if (gender) next.set("gender", gender);
+    setSearchParams(next, { replace: true });
+  };
+
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 4, md: 6 } }}>
-      <Typography variant="overline" sx={{ letterSpacing: "0.3em", color: "text.secondary" }}>
-        {gender ? gender.toUpperCase() : "ALL"}
-      </Typography>
-      <Typography
+    <Container maxWidth="xl" sx={{ py: { xs: 3, md: 5 } }}>
+      <Box
         sx={{
-          fontFamily: '"Cormorant Garamond", serif',
-          fontWeight: 600,
-          fontSize: { xs: 36, md: 64 },
-          letterSpacing: "-0.02em",
-          mt: 1,
+          borderTop: "1px solid rgba(72, 57, 46, 0.12)",
+          borderBottom: "1px solid rgba(72, 57, 46, 0.12)",
+          py: { xs: 3, md: 4.5 },
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", md: "minmax(0, 1.1fr) minmax(320px, 0.9fr)" },
+          gap: { xs: 3, md: 6 },
+          alignItems: "end",
         }}
       >
-        {HEADLINES[gender] || "The collection."}
-      </Typography>
-      <Typography color="text.secondary" sx={{ mt: 1, mb: 4 }}>
-        {subtitle}
-      </Typography>
-
-      <Box sx={{ display: "flex", justifyContent: "center", py: { xs: 3, md: 6 } }}>
-        <Input
-          placeholder="What are you looking for?"
-          value={query}
-          onChange={(event) => updateParam("q", event.target.value)}
-          inputProps={{ "aria-label": "search products" }}
-          sx={{
-            width: { xs: "100%", md: 560 },
-            fontSize: { xs: 18, md: 22 },
-            letterSpacing: "0.18em",
-            "& input": { textAlign: "center", textTransform: "uppercase", py: 1.5 },
-            "&:before": { borderBottom: "1px solid #1a1a1a" },
-            "&:hover:not(.Mui-disabled):before": { borderBottom: "1px solid #1a1a1a !important" },
-            "&:after": { borderBottom: "2px solid #1a1a1a" },
-          }}
-        />
+        <Box>
+          <Typography variant="overline" sx={{ letterSpacing: "0.3em", color: "text.secondary" }}>
+            {gender ? gender.toUpperCase() : "ALL COLLECTION"}
+          </Typography>
+          <Typography
+            sx={{
+              fontFamily: '"Cormorant Garamond", serif',
+              fontWeight: 600,
+              fontSize: { xs: 34, md: 68 },
+              letterSpacing: "-0.03em",
+              mt: 0.75,
+              lineHeight: 0.95,
+            }}
+          >
+            {HEADLINES[gender] || "The collection."}
+          </Typography>
+          <Typography color="text.secondary" sx={{ mt: 1.5, maxWidth: 520, lineHeight: 1.7 }}>
+            A curated edit shaped by clean lines, warmer neutrals and everyday pieces that still feel composed.
+          </Typography>
+        </Box>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2.25 }}>
+          <Input
+            placeholder="Search by name, colour or type"
+            value={query}
+            onChange={(event) => updateParam("q", event.target.value)}
+            inputProps={{ "aria-label": "search products" }}
+            sx={{
+              width: "100%",
+              fontSize: { xs: 15, md: 16 },
+              letterSpacing: "0.12em",
+              "& input": {
+                py: 1.25,
+                textTransform: "uppercase",
+              },
+              "&:before": { borderBottom: "1px solid rgba(72, 57, 46, 0.24)" },
+              "&:hover:not(.Mui-disabled):before": { borderBottom: "1px solid rgba(72, 57, 46, 0.4) !important" },
+              "&:after": { borderBottom: "1px solid #1a1a1a" },
+            }}
+          />
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 2,
+              color: "text.secondary",
+            }}
+          >
+            <Typography variant="caption" sx={{ letterSpacing: "0.16em", textTransform: "uppercase" }}>
+              {subtitle}
+            </Typography>
+            <TextField
+              select
+              size="small"
+              label="Sort by"
+              value={sort}
+              onChange={(event) => updateParam("sort", event.target.value)}
+              sx={{
+                minWidth: 220,
+                "& .MuiOutlinedInput-root": {
+                  bgcolor: "rgba(255,255,255,0.35)",
+                  borderRadius: 0,
+                  fontSize: 14,
+                },
+              }}
+            >
+              {SORT_OPTIONS.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Box>
+        </Box>
       </Box>
 
-      <Stack
-        direction={{ xs: "column", md: "row" }}
-        spacing={2}
-        justifyContent="space-between"
-        alignItems={{ xs: "stretch", md: "center" }}
-        sx={{ mb: 3 }}
+      {activeFilters.length > 0 && (
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          spacing={1.5}
+          alignItems={{ xs: "flex-start", md: "center" }}
+          sx={{ mt: 2.5, mb: 1 }}
+        >
+          <Typography variant="caption" color="text.secondary" sx={{ letterSpacing: "0.16em", textTransform: "uppercase" }}>
+            Current filters
+          </Typography>
+          <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
+            {activeFilters.map((filter) => (
+              <Chip key={filter} label={filter} size="small" variant="outlined" />
+            ))}
+          </Stack>
+          <Typography
+            component="button"
+            onClick={clearFilters}
+            sx={{
+              border: 0,
+              bgcolor: "transparent",
+              p: 0,
+              cursor: "pointer",
+              color: "text.primary",
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              fontSize: 12,
+            }}
+          >
+            Clear filters
+          </Typography>
+        </Stack>
+      )}
+
+      <Box
+        sx={{
+          mt: 3.5,
+          mb: 5,
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", lg: "minmax(0, 1fr) auto" },
+          gap: 2.5,
+          alignItems: "start",
+        }}
       >
         <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
           <Chip
@@ -174,6 +289,7 @@ export default function ProductsPage() {
             onClick={() => updateParam("category", "")}
             variant={category ? "outlined" : "filled"}
             color={category ? "default" : "primary"}
+            sx={{ borderRadius: 999, height: 34 }}
           />
           {categories.map((cat) => (
             <Chip
@@ -182,40 +298,27 @@ export default function ProductsPage() {
               onClick={() => updateParam("category", category === cat ? "" : cat)}
               variant={category === cat ? "filled" : "outlined"}
               color={category === cat ? "primary" : "default"}
+              sx={{ borderRadius: 999, height: 34 }}
             />
           ))}
         </Stack>
-        <TextField
-          select
-          size="small"
-          label="Sort by"
-          value={sort}
-          onChange={(event) => updateParam("sort", event.target.value)}
-          sx={{ minWidth: 200 }}
-        >
-          {SORT_OPTIONS.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              {option.label}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Stack>
-
-      <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1, mb: 5 }}>
-        {PRICE_BANDS.map((band) => {
-          const active = minPrice === band.min && maxPrice === band.max;
-          return (
-            <Chip
-              key={band.label}
-              label={band.label}
-              size="small"
-              onClick={() => setPriceBand(band)}
-              variant={active ? "filled" : "outlined"}
-              color={active ? "primary" : "default"}
-            />
-          );
-        })}
-      </Stack>
+        <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1, justifyContent: { xs: "flex-start", lg: "flex-end" } }}>
+          {PRICE_BANDS.map((band) => {
+            const active = minPrice === band.min && maxPrice === band.max;
+            return (
+              <Chip
+                key={band.label}
+                label={band.label}
+                size="small"
+                onClick={() => setPriceBand(band)}
+                variant={active ? "filled" : "outlined"}
+                color={active ? "primary" : "default"}
+                sx={{ borderRadius: 999, height: 34 }}
+              />
+            );
+          })}
+        </Stack>
+      </Box>
 
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
@@ -224,9 +327,9 @@ export default function ProductsPage() {
       ) : error ? (
         <Typography color="error">{error}</Typography>
       ) : (
-        <Grid container spacing={{ xs: 2, md: 3 }}>
+        <Grid container spacing={{ xs: 3, md: 4, lg: 5 }}>
           {products.map((product) => (
-            <Grid item xs={6} sm={4} md={3} key={product.id}>
+            <Grid item xs={6} md={4} xl={3} key={product.id}>
               <ProductCard product={product} />
             </Grid>
           ))}

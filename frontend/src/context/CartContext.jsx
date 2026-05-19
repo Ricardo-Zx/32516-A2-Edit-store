@@ -19,10 +19,19 @@ export function CartProvider({ children }) {
   const { showToast } = useToast();
   const [cart, setCart] = useState(EMPTY_CART);
   const [loading, setLoading] = useState(false);
+  const [pendingItemIds, setPendingItemIds] = useState([]);
+  const [addingItemId, setAddingItemId] = useState("");
+
+  const startPending = (productId) =>
+    setPendingItemIds((prev) => (prev.includes(productId) ? prev : [...prev, productId]));
+  const stopPending = (productId) =>
+    setPendingItemIds((prev) => prev.filter((id) => id !== productId));
 
   const refresh = useCallback(async () => {
     if (!user) {
       setCart(EMPTY_CART);
+      setPendingItemIds([]);
+      setAddingItemId("");
       return;
     }
     setLoading(true);
@@ -46,14 +55,17 @@ export function CartProvider({ children }) {
         showToast("Please log in first.", "warning");
         return false;
       }
+      setAddingItemId(productId);
       try {
         const { data } = await api.post("/cart/items", { product_id: productId, quantity });
         setCart(data);
         showToast("Added to bag.");
-        return true;
+        return { ok: true, cart: data };
       } catch (error) {
         showToast(describeError(error, "Could not add item."), "error");
-        return false;
+        return { ok: false };
+      } finally {
+        setAddingItemId("");
       }
     },
     [user, showToast]
@@ -61,11 +73,16 @@ export function CartProvider({ children }) {
 
   const updateItem = useCallback(
     async (productId, quantity) => {
+      startPending(productId);
       try {
         const { data } = await api.put(`/cart/items/${productId}`, { quantity });
         setCart(data);
+        return { ok: true };
       } catch (error) {
         showToast(describeError(error, "Update failed."), "error");
+        return { ok: false };
+      } finally {
+        stopPending(productId);
       }
     },
     [showToast]
@@ -73,12 +90,17 @@ export function CartProvider({ children }) {
 
   const removeItem = useCallback(
     async (productId) => {
+      startPending(productId);
       try {
         const { data } = await api.delete(`/cart/items/${productId}`);
         setCart(data);
         showToast("Removed from bag.");
+        return { ok: true };
       } catch (error) {
         showToast(describeError(error, "Remove failed."), "error");
+        return { ok: false };
+      } finally {
+        stopPending(productId);
       }
     },
     [showToast]
@@ -94,8 +116,18 @@ export function CartProvider({ children }) {
   }, [showToast]);
 
   const value = useMemo(
-    () => ({ cart, loading, refresh, addItem, updateItem, removeItem, clear }),
-    [cart, loading, refresh, addItem, updateItem, removeItem, clear]
+    () => ({
+      cart,
+      loading,
+      pendingItemIds,
+      addingItemId,
+      refresh,
+      addItem,
+      updateItem,
+      removeItem,
+      clear,
+    }),
+    [cart, loading, pendingItemIds, addingItemId, refresh, addItem, updateItem, removeItem, clear]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

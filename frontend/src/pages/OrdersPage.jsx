@@ -18,6 +18,13 @@ import { Link as RouterLink } from "react-router-dom";
 
 import api, { describeError } from "../api";
 
+const STATUS_STYLES = {
+  placed: { label: "Placed", color: "default" },
+  processing: { label: "Processing", color: "warning" },
+  shipped: { label: "Shipped", color: "success" },
+  cancelled: { label: "Cancelled", color: "error" },
+};
+
 export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -94,7 +101,11 @@ export default function OrdersPage() {
                   <Typography sx={{ mt: 0.5 }}>Order #{order.id.slice(-6).toUpperCase()}</Typography>
                 </Box>
                 <Stack direction="row" spacing={2} alignItems="center">
-                  <Chip label={order.status} size="small" color="primary" />
+                  <Chip
+                    label={(STATUS_STYLES[order.status] || STATUS_STYLES.placed).label}
+                    size="small"
+                    color={(STATUS_STYLES[order.status] || STATUS_STYLES.placed).color}
+                  />
                   <Typography sx={{ letterSpacing: "0.06em" }}>${order.total.toFixed(2)}</Typography>
                 </Stack>
               </Stack>
