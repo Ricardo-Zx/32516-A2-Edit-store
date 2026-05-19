@@ -9,11 +9,11 @@
 import {
   Box,
   Chip,
-  CircularProgress,
   Container,
   Grid,
   Input,
   MenuItem,
+  Skeleton,
   Stack,
   TextField,
   Typography,
@@ -21,8 +21,8 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import api from "../api";
 import ProductCard from "../components/ProductCard";
+import { getCategories, getProducts } from "../lib/productCache";
 
 const SORT_OPTIONS = [
   { value: "newest", label: "Newest" },
@@ -66,9 +66,8 @@ export default function ProductsPage() {
   const maxPrice = searchParams.get("max_price") || "";
 
   useEffect(() => {
-    api
-      .get("/products/categories")
-      .then(({ data }) => setCategories(data))
+    getCategories()
+      .then((data) => setCategories(data))
       .catch(() => setCategories([]));
   }, []);
 
@@ -85,9 +84,8 @@ export default function ProductsPage() {
     if (maxPrice) params.max_price = maxPrice;
 
     const handle = setTimeout(() => {
-      api
-        .get("/products", { params })
-        .then(({ data }) => {
+      getProducts(params)
+        .then((data) => {
           if (!cancelled) setProducts(data);
         })
         .catch(() => {
@@ -320,19 +318,24 @@ export default function ProductsPage() {
         </Stack>
       </Box>
 
-      {loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-          <CircularProgress />
-        </Box>
-      ) : error ? (
+      {error ? (
         <Typography color="error">{error}</Typography>
       ) : (
         <Grid container spacing={{ xs: 3, md: 4, lg: 5 }}>
-          {products.map((product) => (
-            <Grid item xs={6} md={4} xl={3} key={product.id}>
-              <ProductCard product={product} />
-            </Grid>
-          ))}
+          {loading
+            ? Array.from({ length: 8 }).map((_, index) => (
+                <Grid item xs={6} md={4} xl={3} key={`product-skeleton-${index}`}>
+                  <Skeleton variant="rectangular" sx={{ minHeight: 276, bgcolor: "#efe5d7" }} />
+                  <Skeleton sx={{ mt: 2, width: "35%", bgcolor: "#efe5d7" }} />
+                  <Skeleton sx={{ mt: 1, width: "70%", height: 34, bgcolor: "#efe5d7" }} />
+                  <Skeleton sx={{ mt: 1, width: "40%", bgcolor: "#efe5d7" }} />
+                </Grid>
+              ))
+            : products.map((product) => (
+                <Grid item xs={6} md={4} xl={3} key={product.id}>
+                  <ProductCard product={product} />
+                </Grid>
+              ))}
         </Grid>
       )}
     </Container>

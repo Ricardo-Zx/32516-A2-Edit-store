@@ -28,7 +28,7 @@ export default function CartPage() {
       const { data } = await api.post("/orders");
       await refresh();
       showToast(`Order placed. ${data.item_count} item(s) confirmed.`, "success");
-      navigate("/orders");
+      navigate("/orders", { state: { justPlaced: true, orderId: data.id } });
     } catch (error) {
       showToast(describeError(error, "Checkout failed."), "error");
     } finally {

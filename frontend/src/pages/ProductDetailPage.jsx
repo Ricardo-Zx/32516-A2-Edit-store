@@ -4,14 +4,14 @@
  *
  * @author Frontend (teammate — TBD)
  */
-import { Box, Button, Chip, CircularProgress, Container, IconButton, Stack, Typography } from "@mui/material";
+import { Box, Button, Chip, Container, IconButton, Skeleton, Stack, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import api from "../api";
 import { useCart } from "../context/CartContext";
+import { getProduct } from "../lib/productCache";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -23,14 +23,21 @@ export default function ProductDetailPage() {
   const [addedFeedback, setAddedFeedback] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
     setQty(1);
     setError("");
     setProduct(null);
     setAddedFeedback(false);
-    api
-      .get(`/products/${id}`)
-      .then(({ data }) => setProduct(data))
-      .catch(() => setError("Product not found."));
+    getProduct(id)
+      .then((data) => {
+        if (!cancelled) setProduct(data);
+      })
+      .catch(() => {
+        if (!cancelled) setError("Product not found.");
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   const maxQty = product ? Math.min(99, product.stock) : 1;
@@ -50,9 +57,27 @@ export default function ProductDetailPage() {
 
   if (!product) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-        <CircularProgress />
-      </Box>
+      <Container maxWidth="lg" sx={{ py: { xs: 5, md: 10 } }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            gap: { xs: 4, md: 9 },
+            alignItems: { md: "center" },
+            justifyContent: "center",
+          }}
+        >
+          <Skeleton variant="rectangular" sx={{ width: { xs: "100%", md: 460 }, aspectRatio: "1 / 1", bgcolor: "#efe5d7" }} />
+          <Stack spacing={2.2} sx={{ width: { xs: "100%", md: 420 } }}>
+            <Skeleton width="28%" sx={{ bgcolor: "#efe5d7" }} />
+            <Skeleton width="72%" height={54} sx={{ bgcolor: "#efe5d7" }} />
+            <Skeleton width="24%" height={40} sx={{ bgcolor: "#efe5d7" }} />
+            <Skeleton width="100%" height={28} sx={{ bgcolor: "#efe5d7" }} />
+            <Skeleton width="86%" height={28} sx={{ bgcolor: "#efe5d7" }} />
+            <Skeleton width="100%" height={52} sx={{ bgcolor: "#efe5d7", mt: 1 }} />
+          </Stack>
+        </Box>
+      </Container>
     );
   }
 

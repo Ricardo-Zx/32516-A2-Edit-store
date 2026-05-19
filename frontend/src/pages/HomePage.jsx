@@ -4,13 +4,13 @@
  *
  * @author Frontend (teammate — TBD)
  */
-import { Box, Button, Container, Stack, Typography } from "@mui/material";
+import { Box, Button, Container, Skeleton, Stack, Typography } from "@mui/material";
 import { motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 
-import api from "../api";
 import ProductCard from "../components/ProductCard";
+import { getProducts } from "../lib/productCache";
 
 const EDITORIAL = {
   hero: "/editorial/hero-alt-women.jpg",
@@ -22,9 +22,20 @@ const EDITORIAL = {
 
 export default function HomePage() {
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get("/products", { params: { limit: 200 } }).then(({ data }) => setProducts(data));
+    let cancelled = false;
+    getProducts({ limit: 200 })
+      .then((data) => {
+        if (!cancelled) setProducts(data);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const byGender = useMemo(() => {
@@ -201,11 +212,20 @@ export default function HomePage() {
             "&::-webkit-scrollbar": { display: "none" },
           }}
         >
-          {railProducts.map((product) => (
-            <Box key={product.id}>
-              <ProductCard product={product} />
-            </Box>
-          ))}
+          {loading
+            ? Array.from({ length: 4 }).map((_, index) => (
+                <Box key={`rail-skeleton-${index}`}>
+                  <Skeleton variant="rectangular" sx={{ minHeight: 276, bgcolor: "#efe5d7" }} />
+                  <Skeleton sx={{ mt: 2, width: "35%", bgcolor: "#efe5d7" }} />
+                  <Skeleton sx={{ mt: 1, width: "70%", height: 34, bgcolor: "#efe5d7" }} />
+                  <Skeleton sx={{ mt: 1, width: "40%", bgcolor: "#efe5d7" }} />
+                </Box>
+              ))
+            : railProducts.map((product) => (
+                <Box key={product.id}>
+                  <ProductCard product={product} />
+                </Box>
+              ))}
         </Box>
       </Container>
 
@@ -354,7 +374,7 @@ export default function HomePage() {
                       {feature.subtitle}
                     </Typography>
                     <Stack direction="row" spacing={4} sx={{ pt: 1, fontSize: 14, color: "text.secondary" }}>
-                      <Box>{feature.products.length} curated pieces</Box>
+                      <Box>{loading ? "Loading pieces" : `${feature.products.length} curated pieces`}</Box>
                       <Box>Editorial storefront layout</Box>
                     </Stack>
                     <Typography
@@ -423,11 +443,20 @@ export default function HomePage() {
             gap: { xs: 2, md: 4 },
           }}
         >
-          {arrivals.map((product) => (
-            <Box key={product.id}>
-              <ProductCard product={product} />
-            </Box>
-          ))}
+          {loading
+            ? Array.from({ length: 4 }).map((_, index) => (
+                <Box key={`arrival-skeleton-${index}`}>
+                  <Skeleton variant="rectangular" sx={{ minHeight: 276, bgcolor: "#efe5d7" }} />
+                  <Skeleton sx={{ mt: 2, width: "35%", bgcolor: "#efe5d7" }} />
+                  <Skeleton sx={{ mt: 1, width: "70%", height: 34, bgcolor: "#efe5d7" }} />
+                  <Skeleton sx={{ mt: 1, width: "40%", bgcolor: "#efe5d7" }} />
+                </Box>
+              ))
+            : arrivals.map((product) => (
+                <Box key={product.id}>
+                  <ProductCard product={product} />
+                </Box>
+              ))}
         </Box>
       </Container>
     </Box>
