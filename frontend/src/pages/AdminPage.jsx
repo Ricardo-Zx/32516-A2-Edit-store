@@ -2,7 +2,7 @@
  * AdminPage — role-gated dashboard with four tabs: Users, Carts,
  * Activity feed, Orders, and full Products CRUD (create / edit / delete).
  *
- * @author Frontend (teammate — TBD)
+ * @author Mengshan Wang
  */
 import {
   Box,

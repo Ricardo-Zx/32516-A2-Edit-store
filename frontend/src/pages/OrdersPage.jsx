@@ -2,7 +2,7 @@
  * OrdersPage — the signed-in user's order history: each placed order
  * with its items, total and current fulfilment status.
  *
- * @author Frontend (teammate — TBD)
+ * @author Yuchang Zhang
  */
 import {
   Alert,

@@ -1,7 +1,7 @@
 /**
  * LoginPage — email/password sign-in form with inline error handling.
  *
- * @author Frontend (teammate — TBD)
+ * @author Mengshan Wang
  */
 import { Alert, Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
 import { useState } from "react";

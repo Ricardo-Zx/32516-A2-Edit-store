@@ -4,7 +4,7 @@
  * presets, and server-side sorting. All filter state lives in the URL so
  * results are shareable and the back button works.
  *
- * @author Frontend (teammate — TBD)
+ * @author Mengshan Wang
  */
 import {
   Box,

@@ -2,7 +2,7 @@
  * React entry point. Mounts the app inside the MUI theme, the router,
  * and the Toast / Auth / Cart context providers.
  *
- * @author Frontend (teammate — TBD)
+ * @author Mengshan Wang
  */
 import React from "react";
 import ReactDOM from "react-dom/client";

@@ -2,7 +2,7 @@
  * NotFoundPage — branded 404 shown for any unmatched route instead of
  * silently bouncing the user back to the home page.
  *
- * @author Frontend (teammate — TBD)
+ * @author Mengshan Wang
  */
 import { Box, Button, Container, Stack, Typography } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";

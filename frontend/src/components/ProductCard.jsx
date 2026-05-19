@@ -2,7 +2,7 @@
  * ProductCard — a single catalogue tile: image with hover zoom,
  * category, name, colour and price; links to the detail page.
  *
- * @author Frontend (teammate — TBD)
+ * @author Mengshan Wang
  */
 import { Box, Typography } from "@mui/material";
 import { motion } from "framer-motion";

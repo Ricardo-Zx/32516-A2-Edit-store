@@ -1,3 +1,10 @@
+/**
+ * productCache — a small in-memory cache for product list/detail and
+ * categories with a short TTL, so SPA navigation does not re-hit the
+ * (slow free-tier) MongoDB Atlas cluster on every route change.
+ *
+ * @author Yuchang Zhang
+ */
 import api from "../api";
 
 const DEFAULT_TTL_MS = 5 * 60 * 1000;

@@ -2,7 +2,7 @@
  * CartPage — the shopping bag: line items, quantity steppers, order
  * summary and a real checkout that creates an order on the backend.
  *
- * @author Frontend (teammate — TBD)
+ * @author Yuchang Zhang
  */
 import { Box, Button, Container, Divider, IconButton, Stack, Typography } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";

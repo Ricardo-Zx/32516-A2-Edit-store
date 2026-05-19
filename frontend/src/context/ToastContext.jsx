@@ -2,7 +2,7 @@
  * ToastContext — one global MUI Snackbar; showToast(message, severity)
  * drives every success / error notification in the app.
  *
- * @author Frontend (teammate — TBD)
+ * @author Mengshan Wang
  */
 import { Alert, Snackbar } from "@mui/material";
 import { createContext, useCallback, useContext, useMemo, useState } from "react";

@@ -2,7 +2,7 @@
  * MUI theme — the editorial, Zara-inspired look: warm paper palette,
  * Cormorant Garamond display headings, square corners, blurred app bar.
  *
- * @author Frontend (teammate — TBD)
+ * @author Mengshan Wang
  */
 import { createTheme } from "@mui/material/styles";
 

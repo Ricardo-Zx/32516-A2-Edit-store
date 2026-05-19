@@ -2,7 +2,7 @@
  * Shared axios instance: injects the JWT bearer token on every request
  * and exposes describeError() for consistent user-facing messages.
  *
- * @author Frontend (teammate — TBD)
+ * @author Mengshan Wang
  */
 import axios from "axios";
 

@@ -2,7 +2,7 @@
  * ProductDetailPage — single product view with large imagery, metadata
  * and an add-to-bag action; handles loading and not-found states.
  *
- * @author Frontend (teammate — TBD)
+ * @author Mengshan Wang
  */
 import { Box, Button, Chip, Container, IconButton, Skeleton, Stack, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";

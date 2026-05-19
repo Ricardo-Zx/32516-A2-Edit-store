@@ -2,7 +2,7 @@
  * App shell: the client-side route table plus the RequireAuth /
  * RequireAdmin guards that keep the experience a single-page app.
  *
- * @author Frontend (teammate — TBD)
+ * @author Yuchang Zhang
  */
 import { Box } from "@mui/material";
 import { Navigate, Route, Routes } from "react-router-dom";

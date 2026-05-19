@@ -2,7 +2,7 @@
  * HomePage — the editorial landing page: full-bleed hero, a horizontal
  * featured rail, gendered campaign spotlights and category features.
  *
- * @author Frontend (teammate — TBD)
+ * @author Mengshan Wang
  */
 import { Box, Button, Container, Skeleton, Stack, Typography } from "@mui/material";
 import { motion } from "framer-motion";

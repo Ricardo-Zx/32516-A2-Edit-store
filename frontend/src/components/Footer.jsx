@@ -1,7 +1,7 @@
 /**
  * Footer — minimal site footer with the academic-use disclaimer.
  *
- * @author Frontend (teammate — TBD)
+ * @author Mengshan Wang
  */
 import { Box, Container, Typography } from "@mui/material";
 

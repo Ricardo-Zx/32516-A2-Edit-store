@@ -2,7 +2,7 @@
  * Navbar — sticky top bar: slide-out shop menu, centred wordmark,
  * cart badge and the account menu (sign in / out).
  *
- * @author Frontend (teammate — TBD)
+ * @author Mengshan Wang
  */
 import {
   AppBar,

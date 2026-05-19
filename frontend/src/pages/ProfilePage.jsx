@@ -2,7 +2,7 @@
  * ProfilePage — the signed-in user's account: read-only profile details
  * plus a change-password form that calls PUT /api/auth/password.
  *
- * @author Frontend (teammate — TBD)
+ * @author Yuchang Zhang
  */
 import {
   Alert,

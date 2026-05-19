@@ -2,7 +2,7 @@
  * RegisterPage — account creation form with client-side validation
  * before delegating to the auth context.
  *
- * @author Frontend (teammate — TBD)
+ * @author Mengshan Wang
  */
 import { Alert, Box, Button, Container, Stack, TextField, Typography } from "@mui/material";
 import { useState } from "react";

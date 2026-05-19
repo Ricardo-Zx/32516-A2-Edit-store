@@ -2,7 +2,7 @@
  * AuthContext — holds the signed-in user, bootstraps the profile from a
  * stored token, and exposes login / register / logout.
  *
- * @author Frontend (teammate — TBD)
+ * @author Mengshan Wang
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 

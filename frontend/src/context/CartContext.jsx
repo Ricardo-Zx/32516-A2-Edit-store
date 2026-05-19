@@ -2,7 +2,7 @@
  * CartContext — mirrors the server-side bag and exposes add / update /
  * remove / clear, refreshing whenever the signed-in user changes.
  *
- * @author Frontend (teammate — TBD)
+ * @author Yuchang Zhang
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 

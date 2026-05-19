@@ -164,14 +164,38 @@ Open <http://localhost:5173>.
 
 ## Workload allocation
 
-Record the exact group composition in this section before submitting. The file ownership below is the format used by this project and should match the contributors shown in your public GitHub history.
+This is a two-person group. Every source file carries an `Author:` /
+`@author` header, so individual ownership is verifiable file by file.
 
-| Member | Responsibilities | Key files |
-| ------ | ---------------- | --------- |
-| Yuchang Zhang | Backend architecture, FastAPI routes, MongoDB schema, JWT auth, admin endpoints, data pipeline | `backend/app/**`, `backend/seed.py`, `scripts/build_sample.py` |
-| Frontend owner (replace with actual teammate name, or delete this row for an individual submission) | React SPA, MUI theme, page components, client-side state, UX polish | `frontend/src/**` |
+| Member | Student ID | Role |
+| ------ | ---------- | ---- |
+| Yuchang Zhang | 25678259 | Led backend architecture and implementation, including authentication, database API design, cart/order workflows, admin services, testing, and overall system integration. Also contributed selected customer-facing frontend flows. |
+| Mengshan Wang | _to be added_ | Led frontend implementation and UI refinement, including the homepage, product catalogue, product detail presentation, navigation, and admin-side interface polish. Also contributed to documentation and demo preparation. |
 
-If you have a third member, add another row with their name plus the exact files or folders they contributed.
+### File ownership
+
+**Yuchang Zhang**
+
+- Backend — `backend/app/config.py`, `backend/app/database.py`, `backend/app/deps.py`, `backend/app/security.py`, `backend/app/main.py`, `backend/app/schemas.py`
+- Backend routers — `backend/app/routers/auth.py`, `products.py`, `cart.py`, `orders.py`, `admin.py`
+- Data & tests — `backend/seed.py`, `backend/tests/test_cart_orders.py`, `scripts/build_sample.py`, `scripts/download_hm.sh`
+- Frontend flows — `frontend/src/App.jsx`, `frontend/src/lib/productCache.js`, `frontend/src/context/CartContext.jsx`, `frontend/src/pages/CartPage.jsx`, `frontend/src/pages/OrdersPage.jsx`, `frontend/src/pages/ProfilePage.jsx`
+
+**Mengshan Wang**
+
+- Pages — `frontend/src/pages/HomePage.jsx`, `ProductsPage.jsx`, `ProductDetailPage.jsx`, `AdminPage.jsx`, `LoginPage.jsx`, `RegisterPage.jsx`, `NotFoundPage.jsx`
+- Components & theme — `frontend/src/components/Navbar.jsx`, `ProductCard.jsx`, `Footer.jsx`, `ScrollToTop.jsx`, `frontend/src/theme.js`, `frontend/index.html`
+- App infrastructure — `frontend/src/main.jsx`, `frontend/src/api.js`, `frontend/src/context/AuthContext.jsx`, `frontend/src/context/ToastContext.jsx`
+- Documentation — `README.md`
+
+Project scaffolding and configuration (`.gitignore`, `.env.example`,
+`backend/requirements.txt`, `frontend/package.json`,
+`frontend/vite.config.js`) were set up jointly.
+
+> Note: Mengshan Wang does not use GitHub, so commits were pushed from
+> Yuchang Zhang's account. Per-file authorship is recorded in the header
+> comment of every source file and matches the table above. Replace
+> _to be added_ with Mengshan's student ID before submission.
 
 ## Notes
 
