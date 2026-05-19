@@ -67,11 +67,11 @@ A2/
 │   ├── package.json
 │   └── vite.config.js      # /api + /static proxies to FastAPI
 ├── data/
-│   ├── raw/                # Kaggle source (gitignored, ~2 GB)
-│   └── sample/             # 250 cleaned products + images used by seed.py
+│   ├── raw/                # Kaggle source (gitignored, ~5.3 GB, optional)
+│   └── sample/             # 232 products + images, committed; used by seed.py
 ├── scripts/
-│   ├── download_hm.sh      # downloads the Kaggle dataset
-│   └── build_sample.py     # picks 25 products per category and copies images
+│   ├── download_hm.sh      # optional: downloads the Kaggle dataset
+│   └── build_sample.py     # optional: rebuilds the sample (gender × category)
 ├── .env.example
 ├── .gitignore
 └── README.md
@@ -98,15 +98,22 @@ JWT_EXPIRE_MINUTES=1440
 CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 ```
 
-### 3. Get the data (one-time)
+### 3. Data (already bundled — no download needed)
+
+The cleaned dataset is committed to the repository:
+`data/sample/products.json` (232 products) and the matching 232 images
+in `data/sample/images/`. **You do not need to download anything to run
+the app** — skip straight to step 4.
+
+The scripts below are kept only for reproducibility (to regenerate the
+sample from the original 5.3 GB Kaggle dataset) and are **not required**:
 
 ```bash
-# scripts/download_hm.sh uses Kaggle CLI; ensure ~/.kaggle/access_token is set
+# OPTIONAL — only to regenerate data/sample from scratch.
+# Needs a Kaggle account + ~/.kaggle/access_token.
 bash scripts/download_hm.sh
 python scripts/build_sample.py
 ```
-
-This creates `data/sample/products.json` and `data/sample/images/` (250 items).
 
 ### 4. Backend
 
