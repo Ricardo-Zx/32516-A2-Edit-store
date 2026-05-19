@@ -12,6 +12,14 @@ import { Link as RouterLink } from "react-router-dom";
 import api from "../api";
 import ProductCard from "../components/ProductCard";
 
+const EDITORIAL = {
+  hero: "/editorial/hero-alt-women.jpg",
+  women: "/editorial/women-campaign.jpg",
+  men: "/editorial/men-campaign.png",
+  shoes: "/editorial/shoes-feature.png",
+  bags: "/editorial/bags-feature.png",
+};
+
 export default function HomePage() {
   const [products, setProducts] = useState([]);
 
@@ -36,11 +44,6 @@ export default function HomePage() {
     return groups;
   }, [products]);
 
-  const heroProduct = useMemo(
-    () => byGender.women.find((product) => product.category === "Dresses") || products[0],
-    [byGender, products]
-  );
-
   const railProducts = useMemo(
     () => [
       ...(byCategory.Accessories || []).slice(0, 2),
@@ -53,10 +56,10 @@ export default function HomePage() {
 
   const splitSpotlights = useMemo(
     () => [
-      { label: "Women", to: "/shop?gender=women", product: byGender.women[1] || byGender.women[0] },
-      { label: "Men", to: "/shop?gender=men", product: byGender.men[1] || byGender.men[0] },
+      { label: "Women", to: "/shop?gender=women", image: EDITORIAL.women },
+      { label: "Men", to: "/shop?gender=men", image: EDITORIAL.men },
     ],
-    [byGender]
+    []
   );
 
   const categoryFeatures = useMemo(
@@ -66,12 +69,16 @@ export default function HomePage() {
         subtitle: "Sharp silhouettes and grounded essentials.",
         to: "/shop?category=Shoes",
         products: byCategory.Shoes || [],
+        image: EDITORIAL.shoes,
+        objectPosition: "center center",
       },
       {
         title: "Bags",
         subtitle: "Compact statements for every exit.",
         to: "/shop?category=Bags",
         products: byCategory.Bags || [],
+        image: EDITORIAL.bags,
+        objectPosition: "center center",
       },
     ],
     [byCategory]
@@ -91,24 +98,23 @@ export default function HomePage() {
           overflow: "hidden",
         }}
       >
-        {heroProduct && (
-          <Box
-            component={motion.img}
-            src={heroProduct.image}
-            alt={heroProduct.name}
-            initial={{ scale: 1.05, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 1.1 }}
-            sx={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              filter: "sepia(0.12) saturate(0.92) contrast(0.92)",
-            }}
-          />
-        )}
+        <Box
+          component={motion.img}
+          src={EDITORIAL.hero}
+          alt="Editorial fashion campaign"
+          initial={{ scale: 1.05, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1.1 }}
+          sx={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center center",
+            filter: "sepia(0.12) saturate(0.92) contrast(0.92)",
+          }}
+        />
         <Box
           sx={{
             position: "absolute",
@@ -242,20 +248,19 @@ export default function HomePage() {
                   "&:hover img": { transform: "scale(1.06)" },
                 }}
               >
-                {spotlight.product && (
-                  <Box
-                    component="img"
-                    src={spotlight.product.image}
-                    alt={spotlight.label}
-                    sx={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      transition: "transform 1.1s cubic-bezier(0.2, 0.8, 0.2, 1)",
-                      filter: index === 0 ? "brightness(0.74)" : "brightness(0.82)",
-                    }}
-                  />
-                )}
+                <Box
+                  component="img"
+                  src={spotlight.image}
+                  alt={spotlight.label}
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    objectPosition: index === 0 ? "center center" : "center 20%",
+                    transition: "transform 1.1s cubic-bezier(0.2, 0.8, 0.2, 1)",
+                    filter: index === 0 ? "brightness(0.74)" : "brightness(0.82)",
+                  }}
+                />
                 <Box
                   sx={{
                     position: "absolute",
@@ -295,7 +300,6 @@ export default function HomePage() {
         <Container maxWidth="xl">
           <Stack spacing={6}>
             {categoryFeatures.map((feature, index) => {
-              const imageProduct = feature.products[0];
               return (
                 <Box
                   key={feature.title}
@@ -309,19 +313,18 @@ export default function HomePage() {
                   }}
                 >
                   <Box sx={{ order: { xs: 1, md: index % 2 === 0 ? 1 : 2 } }}>
-                    {imageProduct && (
-                      <Box
-                        component="img"
-                        src={imageProduct.image}
-                        alt={feature.title}
-                        sx={{
-                          width: "100%",
-                          height: "100%",
-                          minHeight: { xs: 360, md: 640 },
-                          objectFit: "cover",
-                        }}
-                      />
-                    )}
+                    <Box
+                      component="img"
+                      src={feature.image}
+                      alt={feature.title}
+                      sx={{
+                        width: "100%",
+                        height: "100%",
+                        minHeight: { xs: 360, md: 640 },
+                        objectFit: "cover",
+                        objectPosition: feature.objectPosition,
+                      }}
+                    />
                   </Box>
                   <Stack
                     spacing={2}
@@ -354,11 +357,28 @@ export default function HomePage() {
                       <Box>{feature.products.length} curated pieces</Box>
                       <Box>Editorial storefront layout</Box>
                     </Stack>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ letterSpacing: "0.14em", textTransform: "uppercase", pt: 0.5 }}
+                    >
+                      Enter this edit using the button below
+                    </Typography>
                     <Button
                       component={RouterLink}
                       to={feature.to}
-                      variant="text"
-                      sx={{ px: 0, justifyContent: "flex-start", width: "fit-content" }}
+                      variant="contained"
+                      size="large"
+                      sx={{
+                        mt: 1,
+                        justifyContent: "center",
+                        width: "fit-content",
+                        minWidth: 180,
+                        px: 3,
+                        bgcolor: "#1f1a17",
+                        color: "#f8f2ea",
+                        "&:hover": { bgcolor: "#2a231f" },
+                      }}
                     >
                       Shop {feature.title}
                     </Button>
