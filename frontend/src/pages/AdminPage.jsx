@@ -30,11 +30,12 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import api, { describeError } from "../api";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { getProducts, invalidateProductCache } from "../lib/productCache";
 
 const EMPTY_PRODUCT = {
   name: "",
@@ -405,6 +406,9 @@ function OrdersPanel({ showToast }) {
     setOrders(data || []);
   }, [data]);
 
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [userFilter, setUserFilter] = useState("all");
+
   const handleStatusChange = async (orderId, status) => {
     setUpdatingId(orderId);
     try {
@@ -418,12 +422,74 @@ function OrdersPanel({ showToast }) {
     }
   };
 
+  const customers = useMemo(() => {
+    const seen = new Map();
+    orders.forEach((order) => {
+      if (!seen.has(order.user_id)) {
+        seen.set(order.user_id, `${order.username} (${order.email})`);
+      }
+    });
+    return [...seen.entries()].map(([id, label]) => ({ id, label }));
+  }, [orders]);
+
+  const visibleOrders = useMemo(
+    () =>
+      orders.filter(
+        (order) =>
+          (statusFilter === "all" || order.status === statusFilter) &&
+          (userFilter === "all" || order.user_id === userFilter)
+      ),
+    [orders, statusFilter, userFilter]
+  );
+
   return (
     <>
       <PanelStatus loading={loading} error={error} empty={orders && !orders.length} emptyText="No orders yet." />
       {orders && orders.length > 0 && (
-        <Stack spacing={3}>
-          {orders.map((order) => (
+        <>
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            spacing={2}
+            justifyContent="space-between"
+            alignItems={{ xs: "flex-start", md: "center" }}
+            sx={{ mb: 3 }}
+          >
+            <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
+              {[{ value: "all", label: "All" }, ...ORDER_STATUS_OPTIONS].map((option) => (
+                <Chip
+                  key={option.value}
+                  label={option.label}
+                  size="small"
+                  onClick={() => setStatusFilter(option.value)}
+                  variant={statusFilter === option.value ? "filled" : "outlined"}
+                  color={statusFilter === option.value ? "primary" : "default"}
+                />
+              ))}
+            </Stack>
+            <TextField
+              select
+              size="small"
+              label="Customer"
+              value={userFilter}
+              onChange={(event) => setUserFilter(event.target.value)}
+              sx={{ minWidth: 240 }}
+            >
+              <MenuItem value="all">All customers</MenuItem>
+              {customers.map((customer) => (
+                <MenuItem key={customer.id} value={customer.id}>
+                  {customer.label}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Stack>
+          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 2 }}>
+            Showing {visibleOrders.length} of {orders.length} order{orders.length === 1 ? "" : "s"}
+          </Typography>
+          {visibleOrders.length === 0 ? (
+            <Typography color="text.secondary">No orders match these filters.</Typography>
+          ) : (
+            <Stack spacing={3}>
+              {visibleOrders.map((order) => (
             <Box key={order.id} sx={{ border: "1px solid #efefef", p: 2 }}>
               <Stack
                 direction={{ xs: "column", md: "row" }}
@@ -492,8 +558,10 @@ function OrdersPanel({ showToast }) {
                 </TableBody>
               </Table>
             </Box>
-          ))}
-        </Stack>
+              ))}
+            </Stack>
+          )}
+        </>
       )}
     </>
   );
@@ -509,7 +577,7 @@ function ProductsPanel({ showToast }) {
   const reload = async () => {
     setLoading(true);
     try {
-      const { data } = await api.get("/products", { params: { limit: 500 } });
+      const data = await getProducts({ limit: 500 });
       setProducts(data);
     } catch (error) {
       showToast(describeError(error, "Failed to load."), "error");
@@ -547,6 +615,7 @@ function ProductsPanel({ showToast }) {
         });
         showToast("Product updated.");
       }
+      invalidateProductCache();
       setEditing(null);
       await reload();
     } catch (error) {
@@ -561,6 +630,7 @@ function ProductsPanel({ showToast }) {
     try {
       await api.delete(`/products/${id}`);
       showToast("Deleted.");
+      invalidateProductCache();
       await reload();
     } catch (error) {
       showToast(describeError(error, "Delete failed."), "error");
