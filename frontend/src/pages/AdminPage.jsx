@@ -574,6 +574,15 @@ function ProductsPanel({ showToast }) {
   const [form, setForm] = useState(EMPTY_PRODUCT);
   const [busy, setBusy] = useState(false);
 
+  const categoryOptions = useMemo(
+    () => [...new Set(products.map((p) => p.category).filter(Boolean))].sort(),
+    [products]
+  );
+  const imageOptions = useMemo(
+    () => products.map((p) => ({ id: p.id, label: `${p.name} · ${p.category}`, image: p.image })),
+    [products]
+  );
+
   const reload = async () => {
     setLoading(true);
     try {
@@ -602,6 +611,10 @@ function ProductsPanel({ showToast }) {
   };
 
   const handleSave = async () => {
+    if (!form.name?.trim() || !form.category || !form.image) {
+      showToast("Name, category and image are required.", "warning");
+      return;
+    }
     setBusy(true);
     try {
       if (editing === "new") {
@@ -683,22 +696,62 @@ function ProductsPanel({ showToast }) {
         <DialogTitle>{editing === "new" ? "New product" : "Edit product"}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
-            {[
-              ["name", "Name"],
-              ["category", "Category"],
-              ["product_type", "Product type"],
-              ["color", "Color"],
-              ["department", "Department"],
-              ["image", "Image URL"],
-            ].map(([key, label]) => (
+            <TextField
+              label="Name"
+              value={form.name ?? ""}
+              onChange={(event) => setForm({ ...form, name: event.target.value })}
+              fullWidth
+              required
+            />
+            <TextField
+              label="Category"
+              value={form.category ?? ""}
+              onChange={(event) => setForm({ ...form, category: event.target.value })}
+              select
+              fullWidth
+              required
+            >
+              {categoryOptions.map((cat) => (
+                <MenuItem key={cat} value={cat}>
+                  {cat}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              label="Image"
+              value={form.image ?? ""}
+              onChange={(event) => setForm({ ...form, image: event.target.value })}
+              select
+              fullWidth
+              required
+              helperText="Reuse an existing product image — no URL needed"
+            >
+              {imageOptions.map((opt) => (
+                <MenuItem key={opt.id} value={opt.image}>
+                  {opt.label}
+                </MenuItem>
+              ))}
+            </TextField>
+            <Stack direction="row" spacing={2}>
               <TextField
-                key={key}
-                label={label}
-                value={form[key] ?? ""}
-                onChange={(event) => setForm({ ...form, [key]: event.target.value })}
+                label="Product type"
+                value={form.product_type ?? ""}
+                onChange={(event) => setForm({ ...form, product_type: event.target.value })}
                 fullWidth
               />
-            ))}
+              <TextField
+                label="Color"
+                value={form.color ?? ""}
+                onChange={(event) => setForm({ ...form, color: event.target.value })}
+                fullWidth
+              />
+            </Stack>
+            <TextField
+              label="Department"
+              value={form.department ?? ""}
+              onChange={(event) => setForm({ ...form, department: event.target.value })}
+              fullWidth
+            />
             <TextField
               label="Gender"
               value={form.gender ?? "unisex"}
