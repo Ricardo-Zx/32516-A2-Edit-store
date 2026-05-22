@@ -72,6 +72,7 @@ A2/
 ├── scripts/
 │   ├── download_hm.sh      # optional: downloads the Kaggle dataset
 │   └── build_sample.py     # optional: rebuilds the sample (gender × category)
+├── docker-compose.yml      # optional: local MongoDB in one command
 ├── .env.example
 ├── .gitignore
 └── README.md
@@ -82,8 +83,10 @@ A2/
 ### 1. Prerequisites
 
 - Python 3.11+, Node.js 18+, npm
-- A MongoDB Atlas free cluster (or local mongod)
-- Kaggle account with API token (for the dataset download only)
+- A MongoDB instance — any **one** of:
+  - a MongoDB Atlas free cluster, or
+  - a local `mongod` install, or
+  - Docker (a ready-to-use `docker-compose.yml` is included — see step 2)
 
 ### 2. Configuration
 
@@ -97,6 +100,22 @@ JWT_ALGORITHM=HS256
 JWT_EXPIRE_MINUTES=1440
 CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 ```
+
+**No MongoDB of your own?** The repo ships a one-service
+`docker-compose.yml`. Start a local MongoDB with:
+
+```bash
+docker compose up -d
+```
+
+then set this single line in `.env` instead of the Atlas URL:
+
+```
+MONGODB_URL=mongodb://localhost:27017
+```
+
+Everything else (seed, backend, frontend) is identical — the driver
+accepts both `mongodb://` and `mongodb+srv://` URLs.
 
 ### 3. Data (already bundled — no download needed)
 

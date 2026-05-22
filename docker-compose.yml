@@ -1,0 +1,18 @@
+# Optional local MongoDB for running the app without a MongoDB Atlas
+# account. Start it with:  docker compose up -d
+# Then point the backend at it in .env:
+#   MONGODB_URL=mongodb://localhost:27017
+#
+# Author: Yuchang Zhang
+services:
+  mongo:
+    image: mongo:7
+    container_name: edit-store-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - edit-store-mongo-data:/data/db
+    restart: unless-stopped
+
+volumes:
+  edit-store-mongo-data:
