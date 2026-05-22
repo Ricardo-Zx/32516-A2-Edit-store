@@ -1,9 +1,9 @@
 """Order checkout and history endpoints.
 
 Creates immutable order snapshots from the current cart, decrements stock,
-and exposes per-user order history.
+and exposes per-user order history plus self-service cancellation.
 
-Author: OpenAI Codex
+Author: Yuchang Zhang
 """
 from datetime import datetime, timezone
 
