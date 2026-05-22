@@ -90,32 +90,28 @@ A2/
 
 ### 2. Configuration
 
-Copy `.env.example` to `.env` and fill in your values:
+Copy the environment template — that's it:
 
-```
-MONGODB_URL=mongodb+srv://<user>:<password>@cluster0.xxxxx.mongodb.net/?appName=Cluster0
-MONGODB_DB=hm_store
-JWT_SECRET=<a long random string>
-JWT_ALGORITHM=HS256
-JWT_EXPIRE_MINUTES=1440
-CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+```bash
+cp .env.example .env
 ```
 
-**No MongoDB of your own?** The repo ships a one-service
-`docker-compose.yml`. Start a local MongoDB with:
+**If you use Docker or a local MongoDB, you do not need to edit `.env`
+at all.** It already defaults to `mongodb://localhost:27017` and ships a
+working `JWT_SECRET`, so the file is ready to use as-is.
+
+Only if you want to use **MongoDB Atlas** do you edit one line —
+`.env.example` contains the commented Atlas URL to copy. (`JWT_SECRET`
+can be any non-empty string; the provided default is fine for the demo.)
+
+Start the bundled MongoDB with Docker:
 
 ```bash
 docker compose up -d
 ```
 
-then set this single line in `.env` instead of the Atlas URL:
-
-```
-MONGODB_URL=mongodb://localhost:27017
-```
-
-Everything else (seed, backend, frontend) is identical — the driver
-accepts both `mongodb://` and `mongodb+srv://` URLs.
+The Motor driver accepts both `mongodb://` and `mongodb+srv://` URLs,
+so seed/backend/frontend behave identically whichever database you use.
 
 ### 3. Data (already bundled — no download needed)
 
