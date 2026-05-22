@@ -21,13 +21,13 @@ A single-page H&M-style fashion store. Customers browse a real H&M catalog, filt
 - **Shopping bag** — quantity controls, subtotal, remove, clear, and real checkout.
 - **Orders** — users can place orders, view order history, and track fulfilment status.
 - **Profile** — signed-in users can review account details and change password.
-- **Admin dashboard** — four tabs:
-  - **Users** — view every account.
+- **Admin dashboard** — six tabs:
+  - **Overview** — total users, products, orders, revenue, status mix, and top-selling products.
+  - **Users** — view every account and promote / revoke the admin role.
   - **Carts** — every user's current bag and totals.
   - **Activity** — login / register / cart actions feed.
-  - **Orders** — inspect all orders and update status (`placed`, `processing`, `shipped`, `cancelled`).
-  - **Products** — full CRUD with create/edit/delete dialogs.
-- **Admin overview** — total users, products, orders, revenue, status mix, and top-selling products.
+  - **Orders** — inspect and filter all orders, and update status (`placed`, `processing`, `shipped`, `cancelled`).
+  - **Products** — full CRUD with create / edit / delete dialogs.
 - **SPA UX** — one `index.html`; everything else is client-side routing with animated transitions.
 
 ## Entities (three required for the assignment)
@@ -222,7 +222,6 @@ Project scaffolding and configuration (`.gitignore`, `.env.example`,
 
 ## Notes
 
-- `data/raw/` and `backend/static/images/` are git-ignored: the raw dataset is too large for GitHub. Anyone cloning the repo runs the two scripts in step 3 to regenerate them.
+- `data/raw/` and `backend/static/images/` are git-ignored. `backend/static/images/` is recreated automatically by `backend/seed.py` (step 4); `data/raw/` is only needed for the optional dataset regeneration in step 3.
 - Image filenames are real H&M article ids (e.g. `0108775015.jpg`). Images are © H&M and used here strictly for an academic, non-commercial demonstration.
 - No credentials are committed; everything is read from `.env`, which is gitignored.
-- Before publishing the repository, confirm `.env` is not tracked, the commit history shows incremental work, and the final group-member names in the table above match the actual contributors.
