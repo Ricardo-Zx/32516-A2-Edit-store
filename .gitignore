@@ -21,7 +21,6 @@ backend/static/images/
 # IDE / tooling
 .idea/
 .vscode/
-.claude/
 .DS_Store
 
 # Old extracted prototype
