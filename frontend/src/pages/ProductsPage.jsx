@@ -44,12 +44,11 @@ const HEADLINES = {
   kids: "Little edits.",
 };
 
-function formatPriceBand(minPrice, maxPrice) {
-  if (!minPrice && !maxPrice) return "";
-  if (!minPrice) return `Under $${maxPrice}`;
-  if (!maxPrice) return `$${minPrice}+`;
-  return `$${minPrice}-$${maxPrice}`;
-}
+const GENDER_OPTIONS = [
+  { value: "women", label: "Women" },
+  { value: "men", label: "Men" },
+  { value: "kids", label: "Kids" },
+];
 
 export default function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -128,24 +127,11 @@ export default function ProductsPage() {
     return `${products.length} item${products.length === 1 ? "" : "s"}`;
   }, [loading, products]);
 
-  const activeFilters = useMemo(() => {
-    const filters = [];
-    if (gender) filters.push(gender);
-    if (category) filters.push(category);
-    if (query) filters.push(`"${query}"`);
-    const priceLabel = formatPriceBand(minPrice, maxPrice);
-    if (priceLabel) filters.push(priceLabel);
-    if (sort !== "newest") {
-      const sortLabel = SORT_OPTIONS.find((option) => option.value === sort)?.label;
-      if (sortLabel) filters.push(sortLabel);
-    }
-    return filters;
-  }, [gender, category, query, minPrice, maxPrice, sort]);
+  const hasActiveFilters =
+    Boolean(gender || category || query || minPrice || maxPrice) || sort !== "newest";
 
   const clearFilters = () => {
-    const next = new URLSearchParams();
-    if (gender) next.set("gender", gender);
-    setSearchParams(next, { replace: true });
+    setSearchParams(new URLSearchParams(), { replace: true });
   };
 
   return (
@@ -237,40 +223,6 @@ export default function ProductsPage() {
         </Box>
       </Box>
 
-      {activeFilters.length > 0 && (
-        <Stack
-          direction={{ xs: "column", md: "row" }}
-          spacing={1.5}
-          alignItems={{ xs: "flex-start", md: "center" }}
-          sx={{ mt: 2.5, mb: 1 }}
-        >
-          <Typography variant="caption" color="text.secondary" sx={{ letterSpacing: "0.16em", textTransform: "uppercase" }}>
-            Current filters
-          </Typography>
-          <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
-            {activeFilters.map((filter) => (
-              <Chip key={filter} label={filter} size="small" variant="outlined" />
-            ))}
-          </Stack>
-          <Typography
-            component="button"
-            onClick={clearFilters}
-            sx={{
-              border: 0,
-              bgcolor: "transparent",
-              p: 0,
-              cursor: "pointer",
-              color: "text.primary",
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              fontSize: 12,
-            }}
-          >
-            Clear filters
-          </Typography>
-        </Stack>
-      )}
-
       <Box
         sx={{
           mt: 3.5,
@@ -281,24 +233,45 @@ export default function ProductsPage() {
           alignItems: "start",
         }}
       >
-        <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
-          <Chip
-            label="All"
-            onClick={() => updateParam("category", "")}
-            variant={category ? "outlined" : "filled"}
-            color={category ? "default" : "primary"}
-            sx={{ borderRadius: 999, height: 34 }}
-          />
-          {categories.map((cat) => (
+        <Stack spacing={1.25}>
+          <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
             <Chip
-              key={cat}
-              label={cat}
-              onClick={() => updateParam("category", category === cat ? "" : cat)}
-              variant={category === cat ? "filled" : "outlined"}
-              color={category === cat ? "primary" : "default"}
+              label="All departments"
+              onClick={() => updateParam("gender", "")}
+              variant={gender ? "outlined" : "filled"}
+              color={gender ? "default" : "primary"}
               sx={{ borderRadius: 999, height: 34 }}
             />
-          ))}
+            {GENDER_OPTIONS.map((option) => (
+              <Chip
+                key={option.value}
+                label={option.label}
+                onClick={() => updateParam("gender", gender === option.value ? "" : option.value)}
+                variant={gender === option.value ? "filled" : "outlined"}
+                color={gender === option.value ? "primary" : "default"}
+                sx={{ borderRadius: 999, height: 34 }}
+              />
+            ))}
+          </Stack>
+          <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
+            <Chip
+              label="All"
+              onClick={() => updateParam("category", "")}
+              variant={category ? "outlined" : "filled"}
+              color={category ? "default" : "primary"}
+              sx={{ borderRadius: 999, height: 34 }}
+            />
+            {categories.map((cat) => (
+              <Chip
+                key={cat}
+                label={cat}
+                onClick={() => updateParam("category", category === cat ? "" : cat)}
+                variant={category === cat ? "filled" : "outlined"}
+                color={category === cat ? "primary" : "default"}
+                sx={{ borderRadius: 999, height: 34 }}
+              />
+            ))}
+          </Stack>
         </Stack>
         <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1, justifyContent: { xs: "flex-start", lg: "flex-end" } }}>
           {PRICE_BANDS.map((band) => {
@@ -315,6 +288,13 @@ export default function ProductsPage() {
               />
             );
           })}
+          <Chip
+            label="Clear all"
+            onClick={clearFilters}
+            disabled={!hasActiveFilters}
+            variant="outlined"
+            sx={{ borderRadius: 999, height: 34, ml: { lg: 0.5 } }}
+          />
         </Stack>
       </Box>
 
